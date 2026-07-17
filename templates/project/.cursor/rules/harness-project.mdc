@@ -1,0 +1,17 @@
+---
+description: Proyecto InfoSails — Orquesta, Leads, arquitectura y designs
+alwaysApply: true
+---
+
+# Proyecto InfoSails
+
+Usuario ↔ **Orquesta** ↔ **Lead** ↔ agentes internos.
+
+## Memoria clave
+
+- Historias: `memory/blueprints/`
+- Arquitectura del producto: `memory/architecture/` (landscape + ADRs)
+- Diseño por historia: `memory/designs/`
+- Estado orquesta: `memory/director-state.json`
+
+Design Lead lee landscape/ADRs/infra antes de proponer; Build Lead implementa con TDD, cov≥85%, mutación y e2e; consume Design Packages.

@@ -1,0 +1,20 @@
+id: discovery
+name: Discovery Lead
+phase: discovery
+version: 0.2.0
+status: active
+role: process_lead
+reports_to: orchestra-director
+
+mission: |
+  Orquestar agentes internos de Discovery, persistir blueprints,
+  informar a la Orquesta solo vía outbox.
+
+skill: .cursor/skills/discovery/SKILL.md
+state: memory/processes/discovery/state.json
+inbox: memory/processes/discovery/inbox-from-orchestra.json
+outbox: memory/processes/discovery/outbox-to-orchestra.json
+
+internal_agents:
+  - interviewer
+  - scribe

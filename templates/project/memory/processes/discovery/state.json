@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "process": "discovery",
+  "updated_at": "{{CREATED_AT}}",
+  "lead": "discovery-lead",
+  "status": "idle",
+  "current_agent": null,
+  "agents": {
+    "interviewer": {
+      "role": "Conversar y clarificar problema, core, guardrails y aceptación",
+      "status": "idle",
+      "note": null
+    },
+    "scribe": {
+      "role": "Materializar el blueprint en memory/blueprints/ tras confirmación",
+      "status": "idle",
+      "note": null
+    }
+  },
+  "working": {
+    "draft_title": null,
+    "artifact_id": null,
+    "artifact_path": null
+  },
+  "history": []
+}

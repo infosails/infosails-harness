@@ -1,0 +1,89 @@
+# Protocolo Orquesta ↔ Lead de proceso
+
+El **Director de Orquesta** no conoce agentes internos de ningún proceso.
+Solo habla con el **Lead** de cada proceso (Discovery Lead, Bug Lead, …).
+
+```text
+Usuario
+   ↕
+Director de Orquesta          ← memory/director-state.json
+   ↕  (briefs / reportes)
+Lead del proceso               ← memory/processes/<proceso>/state.json
+   ↕
+Agentes internos del proceso   ← solo el Lead los conoce y orquesta
+```
+
+## Activación (Orquesta → Lead)
+
+La Orquesta escribe el brief y cede el control al skill del Lead.
+
+Archivo: `memory/processes/<proceso>/inbox-from-orchestra.json`
+
+```json
+{
+  "version": 1,
+  "at": "ISO-8601",
+  "from": "orchestra-director",
+  "to": "<proceso>-lead",
+  "command": "start | resume | abort",
+  "user_intent": "frase del usuario",
+  "constraints": [],
+  "focus_artifact_id": null,
+  "focus_path": null
+}
+```
+
+La Orquesta **no** lista agentes internos ni pasos internos.
+
+## Reportes (Lead → Orquesta)
+
+El Lead escribe el outbox. La Orquesta solo lee esto (no el state interno).
+
+Archivo: `memory/processes/<proceso>/outbox-to-orchestra.json`
+
+```json
+{
+  "version": 1,
+  "at": "ISO-8601",
+  "from": "<proceso>-lead",
+  "to": "orchestra-director",
+  "event": "status | complete | blocked | aborted",
+  "process": "<proceso>",
+  "summary": "una frase para el humano/orquesta",
+  "progress_pct": 0,
+  "artifact": {
+    "type": "blueprint | bug | null",
+    "id": null,
+    "path": null
+  },
+  "next_hint": "design | build | null",
+  "blocked_reason": null
+}
+```
+
+### Eventos
+
+| event | Significado | Qué hace la Orquesta |
+|-------|-------------|----------------------|
+| `status` | Avance intermedio (opcional) | Puede mostrar `summary` al usuario; no cambia de fase |
+| `complete` | Proceso terminó OK | Cierra proceso, registra artefacto, propone siguiente Lead |
+| `blocked` | No puede seguir | Marca blocked; pregunta al usuario |
+| `aborted` | Cancelado | Vuelve a idle |
+
+## Estado interno del proceso
+
+`memory/processes/<proceso>/state.json` — **solo el Lead** lo lee/escribe.
+
+La Orquesta **tiene prohibido**:
+- Leer agentes internos
+- Activar agentes internos
+- Editar `state.json` del proceso
+
+## Cadena de mando
+
+1. Usuario ↔ Orquesta  
+2. Orquesta ↔ Lead (brief / outbox)  
+3. Lead ↔ agentes internos  
+
+Si un agente interno “termina”, avisa al **Lead**, no a la Orquesta.
+El Lead agrega y reporta hacia arriba.

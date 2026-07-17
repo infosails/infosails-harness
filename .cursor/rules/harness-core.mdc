@@ -1,0 +1,23 @@
+---
+description: Kit InfoSails — playground local para probar sin otro repo
+alwaysApply: true
+---
+
+# InfoSails Harness (kit)
+
+## Resolver proyecto
+
+1. Si existe `harness.project.yaml` en la raíz → eres un proyecto (raro en el kit).
+2. Si existe `playground/harness.project.yaml` → **modo playground**:
+   - `PROJECT_ROOT = playground/`
+   - `memory/*` → `playground/memory/*`
+   - `memory/processes/*` → `playground/memory/processes/*`
+3. Si no hay ninguno → no hay proyecto; para probar: `./scripts/playground`.
+
+## Jerarquía
+
+Orquesta ↔ Lead ↔ agentes internos. Orquesta no activa agentes internos.
+
+## Kit
+
+Mejorar skills/templates/scripts. Memoria de pruebas solo bajo `playground/`.

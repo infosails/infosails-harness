@@ -1,0 +1,12 @@
+---
+description: Bug Briefs en memoria del proyecto
+globs: memory/bugs/**/*.{md,json}
+alwaysApply: false
+---
+
+# Bug Briefs
+
+- Viven en `memory/bugs/`.
+- IDs `BUG-YYYYMMDD-SEQ`. Status: `Ready for Fix`.
+- Sincronizar `_index.json` y `memory/backlog.json`.
+- Feature disfrazada de bug → Director → Discovery.

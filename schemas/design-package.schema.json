@@ -1,0 +1,170 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://infosails.dev/schemas/design-package.schema.json",
+  "title": "Design Package",
+  "description": "Salida del Design Lead por historia. Input principal del Build Lead.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "title",
+    "blueprint_id",
+    "status",
+    "created_by",
+    "architecture_read",
+    "tech_goals",
+    "components",
+    "build_plan",
+    "guardrails",
+    "acceptance_map",
+    "architecture_updates",
+    "markdown_path",
+    "created_at",
+    "phase"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^DS-[0-9]{8}-[0-9]{3}$"
+    },
+    "title": { "type": "string", "minLength": 3 },
+    "blueprint_id": {
+      "type": "string",
+      "pattern": "^BP-[0-9]{8}-[0-9]{3}$"
+    },
+    "blueprint_path": { "type": "string" },
+    "status": {
+      "type": "string",
+      "enum": ["Draft", "Ready for Build", "In Build", "Done", "Blocked"]
+    },
+    "created_by": { "type": "string" },
+    "adrs_consulted": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "adrs_created": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "architecture_read": {
+      "type": "object",
+      "properties": {
+        "landscape_summary": { "type": "string" },
+        "reuse": { "type": "array", "items": { "type": "string" } },
+        "from_blueprint_inventory": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "tech_goals": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string" }
+    },
+    "components": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "action"],
+        "properties": {
+          "name": { "type": "string" },
+          "action": { "type": "string", "enum": ["create", "extend", "reuse"] },
+          "notes": { "type": "string" }
+        }
+      }
+    },
+    "contracts": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "data_changes": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "build_plan": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["text", "done"],
+        "properties": {
+          "text": { "type": "string" },
+          "done": { "type": "boolean" },
+          "maps_to_core": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "suggested_paths": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "path": { "type": "string" },
+          "change": { "type": "string" }
+        }
+      }
+    },
+    "guardrails": {
+      "type": "array",
+      "minItems": 3,
+      "items": { "type": "string" }
+    },
+    "acceptance_map": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "scenario": { "type": "string" },
+          "covered_by": { "type": "string" }
+        }
+      }
+    },
+    "risks": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "architecture_updates": {
+      "type": "object",
+      "required": ["landscape_updated", "as_built_updated", "adrs_written"],
+      "properties": {
+        "landscape_updated": { "type": "boolean" },
+        "as_built_updated": { "type": "boolean" },
+        "infrastructure_updated": { "type": "boolean" },
+        "adrs_written": { "type": "boolean" },
+        "impact": {
+          "type": "string",
+          "enum": ["none", "extend", "modify", "deprecate", "add"]
+        },
+        "infra_verdict": {
+          "type": "string",
+          "enum": ["reuse", "extend", "propose_new", "blocked_infra"]
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "infrastructure": {
+      "type": "object",
+      "properties": {
+        "verdict": {
+          "type": "string",
+          "enum": ["reuse", "extend", "propose_new", "blocked_infra"]
+        },
+        "existing_resources": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "proposed_changes": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "build_infra_tasks": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "markdown_path": { "type": "string" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" },
+    "phase": { "type": "string", "const": "design" }
+  }
+}

@@ -1,0 +1,261 @@
+# InfoSails Agentic Harness — kit
+# Fuente de verdad del lifecycle. La memoria de producto NO vive aquí.
+
+name: infosails-harness
+kind: kit
+version: 0.8.0
+description: Kit instalable para desarrollo basado en agentes
+
+model:
+  kit: |
+    Este repositorio. Se instala una vez en la máquina.
+  project: |
+    Repo instanciado con infosails-init; contiene código + memory/.
+  memory: |
+    blueprints, bugs, designs, architecture (landscape+ADRs),
+    director-state, processes/<proceso>/.
+  hierarchy: |
+    Usuario ↔ Orquesta ↔ Lead ↔ agentes internos.
+
+install:
+  script: scripts/install
+  init_project: scripts/init-project
+  command: infosails-init
+  project_template: templates/project
+
+orchestrator:
+  agent: director
+  skill: .cursor/skills/director/SKILL.md
+  state_file: memory/director-state.json
+  state_schema: schemas/director-state.schema.json
+  owns_state: true
+  speaks_to: leads_only
+  protocol: .cursor/skills/director/protocol.md
+  first_action: read_state_then_menu_or_resume
+  playground:
+    path: playground
+    marker: playground/harness.project.yaml
+    setup: scripts/playground
+  pipeline:
+    blueprint: [discovery, design, build, deploy]
+    bug: [bug, build, deploy]
+  transitions:
+    discovery_done: design
+    design_done: build
+    bug_done: build
+    build_done: deploy
+    deploy_done: null
+  intents:
+    discovery:
+      process: discovery
+      lead: discovery-lead
+      skill: .cursor/skills/discovery/SKILL.md
+      aliases: [discovery, blueprint, historia, requisitos, alcance]
+    feature:
+      process: discovery
+      lead: discovery-lead
+      skill: .cursor/skills/discovery/SKILL.md
+      aliases: [feature, nueva feature, nueva funcionalidad]
+    bug:
+      process: bug
+      lead: bug-lead
+      skill: .cursor/skills/bug/SKILL.md
+      aliases: [bug, defect, error, fix]
+    design:
+      process: design
+      lead: design-lead
+      skill: .cursor/skills/design/SKILL.md
+      status: active
+      aliases: [design, arquitectura, diseñar, design package]
+      activated_by: orchestra-director
+    build:
+      process: build
+      lead: build-lead
+      skill: .cursor/skills/build/SKILL.md
+      status: active
+      aliases: [build, implementar, tdd, coding]
+      activated_by: orchestra-director
+    deploy:
+      process: deploy
+      lead: deploy-lead
+      status: planned
+      activated_by: orchestra-director
+
+leads:
+  discovery-lead:
+    process: discovery
+    skill: .cursor/skills/discovery/SKILL.md
+    state: memory/processes/discovery/state.json
+    inbox: memory/processes/discovery/inbox-from-orchestra.json
+    outbox: memory/processes/discovery/outbox-to-orchestra.json
+    internal_agents: [interviewer, scribe]
+  bug-lead:
+    process: bug
+    skill: .cursor/skills/bug/SKILL.md
+    state: memory/processes/bug/state.json
+    inbox: memory/processes/bug/inbox-from-orchestra.json
+    outbox: memory/processes/bug/outbox-to-orchestra.json
+    internal_agents: [triager, scribe]
+  design-lead:
+    process: design
+    skill: .cursor/skills/design/SKILL.md
+    state: memory/processes/design/state.json
+    inbox: memory/processes/design/inbox-from-orchestra.json
+    outbox: memory/processes/design/outbox-to-orchestra.json
+    internal_agents: [surveyor, architect, scribe]
+    reads: [memory/architecture, memory/blueprints]
+    writes: [memory/designs, memory/architecture]
+  build-lead:
+    process: build
+    skill: .cursor/skills/build/SKILL.md
+    standards: .cursor/skills/build/standards.md
+    state: memory/processes/build/state.json
+    inbox: memory/processes/build/inbox-from-orchestra.json
+    outbox: memory/processes/build/outbox-to-orchestra.json
+    internal_agents: [surveyor, planner, tdd-dev, coverage-gate, mutation, e2e, integrator, scribe]
+    reads: [memory/designs, memory/blueprints, memory/architecture]
+    writes: [memory/builds]
+    quality_gates:
+      coverage_min: 85
+      mutation_score_min: 70
+      tdd: required
+      e2e: required_or_justified_skip
+      parallelize: maximize
+
+memory:
+  root: memory
+  backlog: memory/backlog.json
+  blueprints: memory/blueprints
+  bugs: memory/bugs
+  designs: memory/designs
+  builds: memory/builds
+  architecture: memory/architecture
+  landscape: memory/architecture/landscape.md
+  adrs: memory/architecture/adrs
+  director_state: memory/director-state.json
+  processes: memory/processes
+  rule: |
+    director-state: solo Orquesta.
+    processes/*/state: solo el Lead.
+    architecture/: Design Lead (y humano).
+    designs/: Design Lead → input de Build.
+
+# Nubes de la organización (Design debe respetar)
+org:
+  clouds:
+    allowed: [vercel, gcp]
+    policy: |
+      Vercel y GCP están permitidas con su suite completa.
+      Elegir servicios por necesidad (no repartir front→Vercel / back→GCP).
+      Se puede usar una, la otra, o ambas.
+      Otra nube requiere ADR Accepted de excepción.
+  architecture:
+    default_style: hexagonal
+    default_deployable: modular_monolith
+    microservices: only_when_absolutely_necessary
+    policy: |
+      Arquitectura hexagonal (domain / application / ports / adapters) en cada artefacto.
+      Preferir monolito modular con capas claras.
+      Microservicios solo si es absolutamente necesario, con ADR Accepted.
+      Ver .cursor/skills/design/architecture-principles.md
+
+lifecycle:
+  phases:
+    - id: director
+      name: Director de Orquesta
+      status: active
+      role: entrypoint
+    - id: discovery
+      name: Discovery
+      status: active
+      output: memory/blueprints/
+      next: design
+    - id: bug
+      name: Bug
+      status: active
+      output: memory/bugs/
+      next: build
+    - id: design
+      name: Design
+      status: active
+      input: [memory/blueprints/, memory/architecture/]
+      output: memory/designs/
+      next: build
+    - id: build
+      name: Build
+      status: active
+      input: memory/designs/
+      output: [code, memory/builds/]
+      next: deploy
+      quality_gates:
+        coverage_min: 85
+        mutation_score_min: 70
+        tdd: true
+        e2e: required_or_skip
+    - id: deploy
+      name: Deploy
+      status: planned
+      next: null
+
+paths:
+  project_template: templates/project
+  blueprint_template: templates/feature-blueprint.md
+  design_package_template: templates/design-package.md
+  adr_template: templates/adr.md
+  schema: schemas/feature-blueprint.schema.json
+  design_schema: schemas/design-package.schema.json
+  director_state_schema: schemas/director-state.schema.json
+
+blueprint:
+  format: markdown
+  companion: json
+  id_pattern: "BP-{YYYYMMDD}-{SEQ:03d}"
+  default_status: "Ready for Build"
+  discovery_agent_name: "Discovery Lead"
+
+design_package:
+  format: markdown
+  companion: json
+  id_pattern: "DS-{YYYYMMDD}-{SEQ:03d}"
+  default_status: "Ready for Build"
+  design_agent_name: "Design Lead"
+
+adr:
+  id_pattern: "ADR-{YYYYMMDD}-{SEQ:03d}"
+  path: memory/architecture/adrs
+
+bug_brief:
+  format: markdown
+  companion: json
+  id_pattern: "BUG-{YYYYMMDD}-{SEQ:03d}"
+  default_status: "Ready for Fix"
+  bug_agent_name: "Bug Lead"
+
+agents:
+  director:
+    skill: .cursor/skills/director/SKILL.md
+    role: orchestra
+    speaks_to: leads_only
+  discovery-lead:
+    skill: .cursor/skills/discovery/SKILL.md
+    role: process_lead
+    process: discovery
+    reports_to: director
+  bug-lead:
+    skill: .cursor/skills/bug/SKILL.md
+    role: process_lead
+    process: bug
+    reports_to: director
+  design-lead:
+    skill: .cursor/skills/design/SKILL.md
+    role: process_lead
+    process: design
+    reports_to: director
+    output_dir: memory/designs
+  build-lead:
+    skill: .cursor/skills/build/SKILL.md
+    role: process_lead
+    process: build
+    reports_to: director
+    output_dir: memory/builds
+    standards: .cursor/skills/build/standards.md

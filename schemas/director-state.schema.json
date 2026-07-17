@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://infosails.dev/schemas/director-state.schema.json",
+  "title": "Director State",
+  "description": "Estado de orquestación del Director en un proyecto InfoSails. Vive en memory/director-state.json del proyecto.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "updated_at", "session", "focus", "artifacts", "processes", "history"],
+  "properties": {
+    "version": { "type": "integer", "const": 1 },
+    "updated_at": { "type": "string", "format": "date-time" },
+    "session": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["active_process", "active_agent"],
+      "properties": {
+        "active_process": {
+          "type": ["string", "null"],
+          "enum": [null, "discovery", "bug", "design", "build", "deploy"]
+        },
+        "active_agent": {
+          "type": "string",
+          "pattern": "^(director|.+-lead)$"
+        },
+        "started_at": { "type": ["string", "null"], "format": "date-time" },
+        "note": { "type": ["string", "null"] }
+      }
+    },
+    "focus": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "artifact_type": {
+          "type": ["string", "null"],
+          "enum": [null, "blueprint", "bug"]
+        },
+        "artifact_id": { "type": ["string", "null"] },
+        "path": { "type": ["string", "null"] },
+        "pipeline_stage": {
+          "type": ["string", "null"],
+          "enum": [
+            null,
+            "in_discovery",
+            "discovery_done",
+            "in_design",
+            "design_done",
+            "in_bug",
+            "bug_done",
+            "in_build",
+            "build_done",
+            "in_deploy",
+            "done",
+            "blocked"
+          ]
+        }
+      }
+    },
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["type", "path", "stage", "next_process"],
+        "properties": {
+          "type": { "type": "string", "enum": ["blueprint", "bug"] },
+          "path": { "type": "string" },
+          "stage": { "type": "string" },
+          "next_process": {
+            "type": ["string", "null"],
+            "enum": [null, "discovery", "design", "build", "deploy", "bug"]
+          },
+          "blocked_reason": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "processes": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["availability", "status"],
+        "properties": {
+          "availability": {
+            "type": "string",
+            "enum": ["active", "planned", "disabled"]
+          },
+          "status": {
+            "type": "string",
+            "enum": ["idle", "running", "waiting", "blocked"]
+          }
+        }
+      }
+    },
+    "history": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["at", "event", "process"],
+        "properties": {
+          "at": { "type": "string", "format": "date-time" },
+          "event": {
+            "type": "string",
+            "enum": ["activate", "complete", "delegate", "resume", "block", "idle"]
+          },
+          "process": { "type": "string" },
+          "from_process": { "type": ["string", "null"] },
+          "to_process": { "type": ["string", "null"] },
+          "artifact_id": { "type": ["string", "null"] },
+          "note": { "type": ["string", "null"] }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "updated_at": "{{CREATED_AT}}",
+  "session": {
+    "active_process": null,
+    "active_agent": "director",
+    "started_at": null,
+    "note": null
+  },
+  "focus": {
+    "artifact_type": null,
+    "artifact_id": null,
+    "path": null,
+    "pipeline_stage": null
+  },
+  "artifacts": {},
+  "processes": {
+    "discovery": { "availability": "active", "status": "idle" },
+    "bug": { "availability": "active", "status": "idle" },
+    "design": { "availability": "active", "status": "idle" },
+    "build": { "availability": "active", "status": "idle" },
+    "deploy": { "availability": "planned", "status": "idle" }
+  },
+  "history": []
+}

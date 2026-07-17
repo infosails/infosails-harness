@@ -1,0 +1,173 @@
+#!/usr/bin/env bash
+# Instancia un repositorio de proyecto InfoSails.
+# La memoria (historias/blueprints) vive en el proyecto; el kit queda en HARNESS_HOME.
+set -euo pipefail
+
+usage() {
+  cat <<'EOF'
+Uso:
+  init-project <nombre> [--path <dir>] [--into <dir-existente>] [--no-git]
+
+Ejemplos:
+  init-project mi-app
+  init-project mi-app --path ~/Projects/mi-app
+  init-project . --into ~/Projects/app-existente   # adopta un repo ya creado
+
+Variables:
+  INFOSAILS_HARNESS_HOME  Ruta al kit (default: directorio padre de scripts/)
+EOF
+}
+
+HARNESS_HOME="${INFOSAILS_HARNESS_HOME:-$(cd "$(dirname "$0")/.." && pwd)}"
+TEMPLATE="$HARNESS_HOME/templates/project"
+NAME=""
+TARGET=""
+INTO=""
+NO_GIT=0
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -h|--help) usage; exit 0 ;;
+    --path) TARGET="${2:-}"; shift 2 ;;
+    --into) INTO="${2:-}"; shift 2 ;;
+    --no-git) NO_GIT=1; shift ;;
+    -*)
+      echo "Opción desconocida: $1" >&2
+      usage
+      exit 1
+      ;;
+    *)
+      if [[ -z "$NAME" ]]; then NAME="$1"; shift
+      else echo "Argumento extra: $1" >&2; exit 1
+      fi
+      ;;
+  esac
+done
+
+if [[ -z "$NAME" ]]; then
+  usage
+  exit 1
+fi
+
+if [[ ! -d "$TEMPLATE" ]]; then
+  echo "No encuentro template de proyecto en: $TEMPLATE" >&2
+  exit 1
+fi
+
+CREATED_AT="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+
+if [[ -n "$INTO" ]]; then
+  TARGET="$(cd "$INTO" && pwd)"
+  if [[ "$NAME" == "." ]]; then
+    NAME="$(basename "$TARGET")"
+  fi
+else
+  if [[ -z "$TARGET" ]]; then
+    TARGET="$(pwd)/$NAME"
+  fi
+  if [[ -e "$TARGET" ]]; then
+    echo "Ya existe: $TARGET" >&2
+    echo "Usa --into para adoptar un directorio existente." >&2
+    exit 1
+  fi
+  mkdir -p "$TARGET"
+fi
+
+echo "Kit:      $HARNESS_HOME"
+echo "Proyecto: $TARGET"
+echo "Nombre:   $NAME"
+
+# Memoria + metadatos del proyecto
+cp -R "$TEMPLATE/memory" "$TARGET/memory"
+cp "$TEMPLATE/AGENTS.md" "$TARGET/AGENTS.md"
+cp "$TEMPLATE/harness.project.yaml" "$TARGET/harness.project.yaml"
+
+# README: no pisar uno existente al adoptar
+if [[ ! -f "$TARGET/README.md" ]]; then
+  cp "$TEMPLATE/README.md" "$TARGET/README.md"
+fi
+
+# Templates y schemas
+mkdir -p "$TARGET/templates" "$TARGET/schemas"
+cp "$HARNESS_HOME/templates/feature-blueprint.md" "$TARGET/templates/feature-blueprint.md"
+cp "$HARNESS_HOME/templates/design-package.md" "$TARGET/templates/design-package.md"
+cp "$HARNESS_HOME/templates/adr.md" "$TARGET/templates/adr.md"
+cp "$HARNESS_HOME/templates/build-report.md" "$TARGET/templates/build-report.md"
+cp "$HARNESS_HOME/schemas/feature-blueprint.schema.json" "$TARGET/schemas/feature-blueprint.schema.json"
+cp "$HARNESS_HOME/schemas/design-package.schema.json" "$TARGET/schemas/design-package.schema.json"
+cp "$HARNESS_HOME/schemas/build-report.schema.json" "$TARGET/schemas/build-report.schema.json"
+cp "$HARNESS_HOME/schemas/director-state.schema.json" "$TARGET/schemas/director-state.schema.json"
+cp "$HARNESS_HOME/schemas/process-lead-state.schema.json" "$TARGET/schemas/process-lead-state.schema.json"
+
+# Agentes y rules del kit → el proyecto puede operar solo en Cursor
+mkdir -p "$TARGET/.cursor/skills" "$TARGET/.cursor/rules"
+cp -R "$HARNESS_HOME/.cursor/skills/director" "$TARGET/.cursor/skills/"
+cp -R "$HARNESS_HOME/.cursor/skills/discovery" "$TARGET/.cursor/skills/"
+cp -R "$HARNESS_HOME/.cursor/skills/bug" "$TARGET/.cursor/skills/"
+cp -R "$HARNESS_HOME/.cursor/skills/design" "$TARGET/.cursor/skills/"
+cp -R "$HARNESS_HOME/.cursor/skills/build" "$TARGET/.cursor/skills/"
+cp "$TEMPLATE/.cursor/rules/"*.mdc "$TARGET/.cursor/rules/"
+
+# Sustituir placeholders
+replace_in() {
+  local file="$1"
+  if [[ "$(uname)" == "Darwin" ]]; then
+    sed -i '' \
+      -e "s|{{PROJECT_NAME}}|$NAME|g" \
+      -e "s|{{CREATED_AT}}|$CREATED_AT|g" \
+      -e "s|{{HARNESS_HOME}}|$HARNESS_HOME|g" \
+      "$file"
+  else
+    sed -i \
+      -e "s|{{PROJECT_NAME}}|$NAME|g" \
+      -e "s|{{CREATED_AT}}|$CREATED_AT|g" \
+      -e "s|{{HARNESS_HOME}}|$HARNESS_HOME|g" \
+      "$file"
+  fi
+}
+
+replace_in "$TARGET/harness.project.yaml"
+replace_in "$TARGET/README.md"
+replace_in "$TARGET/AGENTS.md"
+replace_in "$TARGET/memory/director-state.json"
+replace_in "$TARGET/memory/processes/discovery/state.json"
+replace_in "$TARGET/memory/processes/bug/state.json"
+replace_in "$TARGET/memory/processes/design/state.json"
+replace_in "$TARGET/memory/processes/build/state.json"
+replace_in "$TARGET/memory/architecture/landscape.md"
+replace_in "$TARGET/memory/architecture/landscape.json"
+
+# .gitignore mínimo si no hay
+if [[ ! -f "$TARGET/.gitignore" ]]; then
+  cat > "$TARGET/.gitignore" <<'EOF'
+.DS_Store
+.env
+.env.*
+!.env.example
+node_modules/
+dist/
+build/
+.venv/
+__pycache__/
+*.log
+EOF
+fi
+
+if [[ "$NO_GIT" -eq 0 ]]; then
+  if [[ ! -d "$TARGET/.git" ]]; then
+    git -C "$TARGET" init -q
+    echo "Git: inicializado en $TARGET"
+  fi
+fi
+
+cat <<EOF
+
+Listo. Proyecto instanciado.
+
+  cd "$TARGET"
+  # Abre esta carpeta en Cursor y escribe: hola
+
+Memoria (historias) → $TARGET/memory/blueprints/
+Kit de origen       → $HARNESS_HOME
+
+EOF

@@ -1,0 +1,24 @@
+id: director
+name: Director de Orquesta
+role: orchestra
+version: 0.3.0
+status: active
+
+mission: |
+  Hablar solo con Leads de proceso. Activar, recibir outbox, mantener
+  director-state y delegar al siguiente Lead. No conocer agentes internos.
+
+skill: .cursor/skills/director/SKILL.md
+protocol: .cursor/skills/director/protocol.md
+state_file: memory/director-state.json
+owns_state: true
+speaks_to: leads_only
+
+first_action: read_state_then_menu_or_resume
+
+delegates_to:
+  - discovery-lead
+  - bug-lead
+  - design-lead
+  - build-lead
+  - deploy-lead

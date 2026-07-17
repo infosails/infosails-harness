@@ -1,0 +1,165 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://infosails.dev/schemas/feature-blueprint.schema.json",
+  "title": "Feature Blueprint",
+  "description": "Representación máquina-legible del Feature Blueprint producido por Discovery. El artefacto canónico para humanos/agentes de build es el .md; este JSON es el índice estructurado.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "title",
+    "epic",
+    "status",
+    "created_by",
+    "problem",
+    "existence_inventory",
+    "core",
+    "out_of_scope",
+    "acceptance_criteria",
+    "markdown_path",
+    "created_at",
+    "phase"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^BP-[0-9]{8}-[0-9]{3}$",
+      "description": "Identificador único del blueprint (ej. BP-20260717-001)"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 120
+    },
+    "epic": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "Draft",
+        "Ready for Design",
+        "Ready for Build",
+        "In Build",
+        "Done",
+        "Blocked"
+      ]
+    },
+    "created_by": {
+      "type": "string"
+    },
+    "problem": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 6,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "existence_inventory": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["already_exists", "partial", "new"],
+      "properties": {
+        "already_exists": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["text"],
+            "properties": {
+              "text": { "type": "string" },
+              "where": { "type": ["string", "null"] }
+            }
+          }
+        },
+        "partial": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["text", "missing"],
+            "properties": {
+              "text": { "type": "string" },
+              "already_there": { "type": ["string", "null"] },
+              "missing": { "type": "string" }
+            }
+          }
+        },
+        "new": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["text"],
+            "properties": {
+              "text": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "core": {
+      "type": "array",
+      "minItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["text", "done", "existence"],
+        "properties": {
+          "text": { "type": "string", "minLength": 1 },
+          "done": { "type": "boolean", "default": false },
+          "existence": {
+            "type": "string",
+            "enum": ["new", "partial"],
+            "description": "Solo new/partial entran al Core; already_exists va al inventario"
+          },
+          "already_there": { "type": ["string", "null"] },
+          "missing": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "out_of_scope": {
+      "type": "array",
+      "minItems": 3,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "acceptance_criteria": {
+      "type": "array",
+      "minItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "given", "when", "then"],
+        "properties": {
+          "name": { "type": "string" },
+          "given": { "type": "string" },
+          "when": { "type": "string" },
+          "then": { "type": "string" }
+        }
+      }
+    },
+    "markdown_path": {
+      "type": "string",
+      "description": "Ruta relativa al .md canónico"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "phase": {
+      "type": "string",
+      "const": "discovery"
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "notes": {
+      "type": "string"
+    }
+  }
+}

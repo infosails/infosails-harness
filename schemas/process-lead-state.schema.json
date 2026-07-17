@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://infosails.dev/schemas/process-lead-state.schema.json",
+  "title": "Process Lead State",
+  "description": "Estado interno de un proceso. Solo lo edita el Lead de ese proceso.",
+  "type": "object",
+  "required": ["version", "process", "updated_at", "lead", "status", "agents", "history"],
+  "properties": {
+    "version": { "type": "integer", "const": 1 },
+    "process": { "type": "string" },
+    "updated_at": { "type": "string", "format": "date-time" },
+    "lead": { "type": "string" },
+    "status": {
+      "type": "string",
+      "enum": ["idle", "running", "blocked", "completed", "aborted"]
+    },
+    "current_agent": { "type": ["string", "null"] },
+    "agents": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["role", "status"],
+        "properties": {
+          "role": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": ["idle", "running", "done", "blocked", "skipped"]
+          },
+          "note": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "working": {
+      "type": "object",
+      "properties": {
+        "draft_title": { "type": ["string", "null"] },
+        "artifact_id": { "type": ["string", "null"] },
+        "artifact_path": { "type": ["string", "null"] }
+      }
+    },
+    "history": { "type": "array" }
+  }
+}

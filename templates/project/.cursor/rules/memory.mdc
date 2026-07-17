@@ -1,0 +1,12 @@
+---
+description: Memoria del proyecto — historias, bugs y estado del Director
+globs: memory/**/*
+alwaysApply: false
+---
+
+# Memoria
+
+- Fuente de verdad de qué construir/corregir y del pipeline.
+- `director-state.json`: solo lo edita el Director.
+- Al crear/editar blueprints/bugs: actualizar `_index.json` y `backlog.json`; el Director actualiza `director-state` al cerrar el proceso.
+- Preferir status `Done`/`Blocked` antes de borrar ítems Ready.

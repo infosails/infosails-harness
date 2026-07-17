@@ -1,0 +1,28 @@
+id: design
+name: Design Lead
+phase: design
+version: 0.1.0
+status: active
+role: process_lead
+reports_to: orchestra-director
+
+mission: |
+  Leer arquitectura existente (landscape + ADRs), diseñar cada blueprint
+  y producir Design Packages + actualizaciones de arquitectura para Build.
+
+skill: .cursor/skills/design/SKILL.md
+state: memory/processes/design/state.json
+inbox: memory/processes/design/inbox-from-orchestra.json
+outbox: memory/processes/design/outbox-to-orchestra.json
+
+reads:
+  - memory/architecture/
+  - memory/blueprints/
+writes:
+  - memory/designs/
+  - memory/architecture/
+
+internal_agents:
+  - surveyor
+  - architect
+  - scribe

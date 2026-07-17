@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "product": "{{PROJECT_NAME}}",
+  "updated_at": "{{CREATED_AT}}",
+  "maintainer": "Design Lead",
+  "summary": "",
+  "clouds": {
+    "allowed": ["vercel", "gcp"],
+    "policy": "Vercel and GCP full suites are allowed. Pick per need (not front=Vercel / back=GCP). No other clouds without Accepted ADR exception."
+  },
+  "stack": {
+    "frontend": null,
+    "backend": null,
+    "data": null,
+    "infra": "Vercel + GCP"
+  },
+  "infrastructure": {
+    "clouds": [
+      { "id": "vercel", "role": "full_suite", "status": "active" },
+      { "id": "gcp", "role": "full_suite", "status": "active" }
+    ],
+    "repositories": {
+      "strategy": null,
+      "repos": [],
+      "created_by": "design-lead"
+    },
+    "resources": [],
+    "constraints": [
+      "Solo nubes Vercel y GCP (suites completas)",
+      "No AWS/Azure/u otros sin ADR de excepción",
+      "No repartir por capa front/back: elegir servicio por necesidad",
+      "Arquitectura hexagonal interna; microservicios solo si es absolutamente necesario + ADR"
+    ],
+    "no_provision_without_approval": []
+  },
+  "modules": [],
+  "integrations": [],
+  "data_ownership": [],
+  "cross_cutting": {
+    "auth": null,
+    "observability": null,
+    "config": null
+  },
+  "constraints": [
+    "clouds_allowed: vercel, gcp (full suites)",
+    "style: hexagonal",
+    "microservices: only_when_absolutely_necessary"
+  ],
+  "gaps": [],
+  "as_built": [],
+  "architecture_changelog": [],
+  "active_adrs": []
+}

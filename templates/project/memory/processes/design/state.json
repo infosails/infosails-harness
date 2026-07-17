@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "process": "design",
+  "updated_at": "{{CREATED_AT}}",
+  "lead": "design-lead",
+  "status": "idle",
+  "current_agent": null,
+  "agents": {
+    "surveyor": {
+      "role": "Leer landscape, ADRs, blueprint e inventario de existencia",
+      "status": "idle",
+      "note": null
+    },
+    "architect": {
+      "role": "Proponer diseño técnico alineado a arquitectura existente",
+      "status": "idle",
+      "note": null
+    },
+    "scribe": {
+      "role": "Escribir Design Package, ADRs y actualizar landscape si aplica",
+      "status": "idle",
+      "note": null
+    }
+  },
+  "working": {
+    "blueprint_id": null,
+    "draft_title": null,
+    "artifact_id": null,
+    "artifact_path": null
+  },
+  "history": []
+}

@@ -1,0 +1,169 @@
+#!/usr/bin/env bash
+# Playground local: simula un proyecto DENTRO del kit, sin install ni otro repo.
+set -euo pipefail
+
+HARNESS_HOME="$(cd "$(dirname "$0")/.." && pwd)"
+PLAY="$HARNESS_HOME/playground"
+TEMPLATE="$HARNESS_HOME/templates/project"
+CREATED_AT="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+
+usage() {
+  cat <<'EOF'
+Uso:
+  ./scripts/playground          # crea o refresca el playground
+  ./scripts/playground --reset  # borra memoria/estado y recrea en limpio
+  ./scripts/playground --status # muestra si existe y rutas clave
+
+El playground vive en ./playground/ (mismo repo del kit).
+No requiere infosails-init ni instalar en la máquina.
+Skills se enlazan al kit: editas .cursor/skills/ y el playground los usa al instante.
+EOF
+}
+
+cmd_status() {
+  if [[ ! -f "$PLAY/harness.project.yaml" ]]; then
+    echo "Playground: no existe. Corre: ./scripts/playground"
+    exit 1
+  fi
+  echo "Playground: $PLAY"
+  echo "  project:  $PLAY/harness.project.yaml"
+  echo "  memory:   $PLAY/memory/"
+  echo "  skills:   $PLAY/.cursor/skills/ -> kit"
+  if [[ -f "$PLAY/memory/director-state.json" ]]; then
+    echo "  director-state: presente"
+  fi
+  if [[ -f "$PLAY/memory/backlog.json" ]]; then
+    echo "  backlog items: $(grep -c '"id"' "$PLAY/memory/backlog.json" 2>/dev/null || echo 0)"
+  fi
+}
+
+link_or_copy() {
+  local src="$1" dest="$2"
+  mkdir -p "$(dirname "$dest")"
+  rm -rf "$dest"
+  ln -sfn "$src" "$dest"
+}
+
+setup_skeleton() {
+  local force_memory="${1:-0}"
+  mkdir -p "$PLAY"
+
+  if [[ "$force_memory" -eq 1 ]] || [[ ! -d "$PLAY/memory" ]]; then
+    rm -rf "$PLAY/memory"
+    cp -R "$TEMPLATE/memory" "$PLAY/memory"
+  else
+    # Enriquecer playground existente sin borrar blueprints
+    [[ -d "$PLAY/memory/architecture" ]] || cp -R "$TEMPLATE/memory/architecture" "$PLAY/memory/architecture"
+    [[ -d "$PLAY/memory/designs" ]] || cp -R "$TEMPLATE/memory/designs" "$PLAY/memory/designs"
+    [[ -d "$PLAY/memory/processes/design" ]] || cp -R "$TEMPLATE/memory/processes/design" "$PLAY/memory/processes/design"
+    [[ -d "$PLAY/memory/processes/build" ]] || cp -R "$TEMPLATE/memory/processes/build" "$PLAY/memory/processes/build"
+    [[ -d "$PLAY/memory/builds" ]] || cp -R "$TEMPLATE/memory/builds" "$PLAY/memory/builds"
+    # Activar design/build en director-state si siguen planned
+    if [[ "$(uname)" == "Darwin" ]]; then
+      sed -i '' \
+        -e 's/"design": { "availability": "planned"/"design": { "availability": "active"/' \
+        -e 's/"build": { "availability": "planned"/"build": { "availability": "active"/' \
+        "$PLAY/memory/director-state.json" 2>/dev/null || true
+    else
+      sed -i \
+        -e 's/"design": { "availability": "planned"/"design": { "availability": "active"/' \
+        -e 's/"build": { "availability": "planned"/"build": { "availability": "active"/' \
+        "$PLAY/memory/director-state.json" 2>/dev/null || true
+    fi
+  fi
+
+  cp "$TEMPLATE/AGENTS.md" "$PLAY/AGENTS.md"
+  cp "$TEMPLATE/harness.project.yaml" "$PLAY/harness.project.yaml"
+
+  # Skills y schemas del kit en vivo (symlink)
+  mkdir -p "$PLAY/.cursor"
+  link_or_copy "$HARNESS_HOME/.cursor/skills" "$PLAY/.cursor/skills"
+  mkdir -p "$PLAY/.cursor/rules"
+  rm -f "$PLAY/.cursor/rules/"*.mdc 2>/dev/null || true
+  cp "$TEMPLATE/.cursor/rules/"*.mdc "$PLAY/.cursor/rules/"
+
+  mkdir -p "$PLAY/templates" "$PLAY/schemas"
+  link_or_copy "$HARNESS_HOME/templates/feature-blueprint.md" "$PLAY/templates/feature-blueprint.md"
+  link_or_copy "$HARNESS_HOME/templates/design-package.md" "$PLAY/templates/design-package.md"
+  link_or_copy "$HARNESS_HOME/templates/adr.md" "$PLAY/templates/adr.md"
+  link_or_copy "$HARNESS_HOME/schemas/feature-blueprint.schema.json" "$PLAY/schemas/feature-blueprint.schema.json"
+  link_or_copy "$HARNESS_HOME/templates/build-report.md" "$PLAY/templates/build-report.md"
+  link_or_copy "$HARNESS_HOME/schemas/design-package.schema.json" "$PLAY/schemas/design-package.schema.json"
+  link_or_copy "$HARNESS_HOME/schemas/build-report.schema.json" "$PLAY/schemas/build-report.schema.json"
+  link_or_copy "$HARNESS_HOME/schemas/director-state.schema.json" "$PLAY/schemas/director-state.schema.json"
+  link_or_copy "$HARNESS_HOME/schemas/process-lead-state.schema.json" "$PLAY/schemas/process-lead-state.schema.json"
+
+  # Placeholders
+  local files=(
+    "$PLAY/harness.project.yaml"
+    "$PLAY/AGENTS.md"
+  )
+  if [[ -f "$PLAY/memory/director-state.json" ]]; then
+    files+=(
+      "$PLAY/memory/director-state.json"
+      "$PLAY/memory/processes/discovery/state.json"
+      "$PLAY/memory/processes/bug/state.json"
+    )
+  fi
+  [[ -f "$PLAY/memory/processes/design/state.json" ]] && files+=("$PLAY/memory/processes/design/state.json")
+  [[ -f "$PLAY/memory/processes/build/state.json" ]] && files+=("$PLAY/memory/processes/build/state.json")
+  [[ -f "$PLAY/memory/architecture/landscape.md" ]] && files+=("$PLAY/memory/architecture/landscape.md")
+  [[ -f "$PLAY/memory/architecture/landscape.json" ]] && files+=("$PLAY/memory/architecture/landscape.json")
+
+  if [[ "$(uname)" == "Darwin" ]]; then
+    sed -i '' \
+      -e "s|{{PROJECT_NAME}}|playground|g" \
+      -e "s|{{CREATED_AT}}|$CREATED_AT|g" \
+      -e "s|{{HARNESS_HOME}}|$HARNESS_HOME|g" \
+      "${files[@]}"
+  else
+    sed -i \
+      -e "s|{{PROJECT_NAME}}|playground|g" \
+      -e "s|{{CREATED_AT}}|$CREATED_AT|g" \
+      -e "s|{{HARNESS_HOME}}|$HARNESS_HOME|g" \
+      "${files[@]}"
+  fi
+
+  if ! grep -q "playground: true" "$PLAY/harness.project.yaml"; then
+    printf '\nplayground: true\ndev: true\n' >> "$PLAY/harness.project.yaml"
+  fi
+}
+
+RESET=0
+STATUS=0
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -h|--help) usage; exit 0 ;;
+    --reset) RESET=1; shift ;;
+    --status) STATUS=1; shift ;;
+    *) echo "Opción desconocida: $1" >&2; usage; exit 1 ;;
+  esac
+done
+
+if [[ "$STATUS" -eq 1 ]]; then
+  cmd_status
+  exit 0
+fi
+
+mkdir -p "$PLAY"
+
+if [[ "$RESET" -eq 1 ]]; then
+  echo "Reset: recreando memoria del playground"
+  setup_skeleton 1
+else
+  setup_skeleton 0
+fi
+
+if [[ ! -f "$PLAY/README.md" ]]; then
+  cat > "$PLAY/README.md" <<'EOF'
+# Playground — corre ./scripts/playground desde la raíz del kit
+EOF
+fi
+
+echo ""
+echo "Playground listo: $PLAY"
+echo "  Memoria → playground/memory/"
+echo "  Skills  → symlink al kit"
+echo ""
+echo "En este mismo repo de Cursor: \"hola\" o \"probar playground\""
+echo "Para limpio: ./scripts/playground --reset"

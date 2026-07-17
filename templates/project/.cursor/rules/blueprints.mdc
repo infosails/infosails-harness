@@ -1,0 +1,12 @@
+---
+description: Feature Blueprints (historias) en memoria del proyecto
+globs: memory/blueprints/**/*.{md,json}
+alwaysApply: false
+---
+
+# Historias / Blueprints
+
+- Viven en `memory/blueprints/`.
+- IDs `BP-YYYYMMDD-SEQ`. Status típico: `Ready for Build`.
+- Out of Scope con `**NO**`. Aceptación Gherkin.
+- Sincronizar `_index.json` y `memory/backlog.json`.

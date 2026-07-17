@@ -1,0 +1,30 @@
+# Identifica este repo como una instancia de proyecto InfoSails Harness.
+# La memoria (historias, bugs, estado del Director) vive AQUÍ.
+
+kind: infosails-project
+harness_version: "0.5.0"
+
+project:
+  name: "{{PROJECT_NAME}}"
+  created_at: "{{CREATED_AT}}"
+
+# Memoria de este proyecto (resultado de procesos — no del kit)
+memory:
+  root: memory
+  backlog: memory/backlog.json
+  blueprints: memory/blueprints
+  bugs: memory/bugs
+  director_state: memory/director-state.json
+  rule: |
+    Si no está en memory/, no cuenta como trabajo de este proyecto.
+    El chat no es memoria.
+    Solo el Director edita director-state.json (estado de procesos y handoffs).
+
+orchestrator:
+  agent: director
+  state_file: memory/director-state.json
+
+# De dónde se copiaron skills/templates al instanciar (referencia)
+kit:
+  source: "{{HARNESS_HOME}}"
+  synced_at: "{{CREATED_AT}}"

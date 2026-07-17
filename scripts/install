@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+# Instala el kit InfoSails Harness en esta máquina (PATH + variable de entorno).
+set -euo pipefail
+
+HARNESS_HOME="$(cd "$(dirname "$0")/.." && pwd)"
+BIN_DIR="${INFOSAILS_BIN_DIR:-$HOME/.local/bin}"
+MARKER_BEGIN="# >>> infosails-harness >>>"
+MARKER_END="# <<< infosails-harness <<<"
+
+mkdir -p "$BIN_DIR"
+ln -sfn "$HARNESS_HOME/scripts/init-project" "$BIN_DIR/infosails-init"
+chmod +x "$HARNESS_HOME/scripts/init-project" "$BIN_DIR/infosails-init"
+
+SHELL_NAME="$(basename "${SHELL:-zsh}")"
+RC_FILE=""
+case "$SHELL_NAME" in
+  zsh) RC_FILE="$HOME/.zshrc" ;;
+  bash) RC_FILE="$HOME/.bashrc" ;;
+  *) RC_FILE="$HOME/.profile" ;;
+esac
+
+BLOCK=$(cat <<EOF
+$MARKER_BEGIN
+export INFOSAILS_HARNESS_HOME="$HARNESS_HOME"
+export PATH="$BIN_DIR:\$PATH"
+$MARKER_END
+EOF
+)
+
+touch "$RC_FILE"
+if grep -q "$MARKER_BEGIN" "$RC_FILE" 2>/dev/null; then
+  # Actualizar bloque existente
+  tmp="$(mktemp)"
+  awk -v begin="$MARKER_BEGIN" -v end="$MARKER_END" -v block="$BLOCK" '
+    $0 == begin { skip=1; print block; next }
+    $0 == end { skip=0; next }
+    !skip { print }
+  ' "$RC_FILE" > "$tmp"
+  mv "$tmp" "$RC_FILE"
+  echo "Actualizado bloque InfoSails en $RC_FILE"
+else
+  printf "\n%s\n" "$BLOCK" >> "$RC_FILE"
+  echo "Añadido bloque InfoSails en $RC_FILE"
+fi
+
+cat <<EOF
+
+Instalación del kit OK.
+
+  INFOSAILS_HARNESS_HOME=$HARNESS_HOME
+  Comando: infosails-init
+
+Recarga la shell:
+
+  source $RC_FILE
+
+Luego crea un proyecto:
+
+  infosails-init mi-app --path ~/Projects/mi-app
+
+La memoria (historias) quedará en el repo del proyecto, no en el kit.
+
+EOF

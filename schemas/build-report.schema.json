@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://infosails.dev/schemas/build-report.schema.json",
+  "title": "Build Report",
+  "type": "object",
+  "required": [
+    "id",
+    "title",
+    "design_package_id",
+    "status",
+    "created_by",
+    "coverage",
+    "mutation",
+    "e2e",
+    "gates",
+    "markdown_path",
+    "created_at",
+    "phase"
+  ],
+  "properties": {
+    "id": { "type": "string", "pattern": "^BR-[0-9]{8}-[0-9]{3}$" },
+    "title": { "type": "string" },
+    "design_package_id": { "type": ["string", "null"] },
+    "blueprint_id": { "type": ["string", "null"] },
+    "bug_id": { "type": ["string", "null"] },
+    "status": {
+      "type": "string",
+      "enum": ["Ready for Deploy", "Blocked", "In Progress"]
+    },
+    "created_by": { "type": "string" },
+    "work_packages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "description": { "type": "string" },
+          "parallel": { "type": "boolean" },
+          "status": { "type": "string" }
+        }
+      }
+    },
+    "coverage": {
+      "type": "object",
+      "required": ["percent", "threshold", "passed"],
+      "properties": {
+        "percent": { "type": "number" },
+        "threshold": { "type": "number", "const": 85 },
+        "passed": { "type": "boolean" },
+        "command": { "type": "string" }
+      }
+    },
+    "mutation": {
+      "type": "object",
+      "required": ["score", "threshold", "passed"],
+      "properties": {
+        "score": { "type": ["number", "null"] },
+        "threshold": { "type": "number" },
+        "passed": { "type": "boolean" },
+        "tool": { "type": "string" },
+        "command": { "type": "string" }
+      }
+    },
+    "e2e": {
+      "type": "object",
+      "required": ["executed", "passed"],
+      "properties": {
+        "executed": { "type": "boolean" },
+        "skipped_reason": { "type": ["string", "null"] },
+        "passed": { "type": "boolean" },
+        "command": { "type": "string" }
+      }
+    },
+    "gates": {
+      "type": "object",
+      "properties": {
+        "tdd": { "type": "boolean" },
+        "coverage": { "type": "boolean" },
+        "mutation": { "type": "boolean" },
+        "e2e": { "type": "boolean" },
+        "guardrails": { "type": "boolean" },
+        "gherkin": { "type": "boolean" }
+      }
+    },
+    "markdown_path": { "type": "string" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "phase": { "type": "string", "const": "build" }
+  }
+}

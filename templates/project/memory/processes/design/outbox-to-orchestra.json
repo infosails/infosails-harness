@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "at": null,
+  "from": "design-lead",
+  "to": "orchestra-director",
+  "event": null,
+  "process": "design",
+  "summary": null,
+  "progress_pct": 0,
+  "artifact": {
+    "type": null,
+    "id": null,
+    "path": null
+  },
+  "next_hint": null,
+  "blocked_reason": null
+}
