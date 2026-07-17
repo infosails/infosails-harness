@@ -16,4 +16,4 @@ Si existe `playground/harness.project.yaml` → `PROJECT_ROOT = playground/`.
 | discovery | Discovery Lead |
 | bug | Bug Lead |
 | design | Design Lead |
-| build | Build Lead (TDD, cov≥85%, mutación, e2e) |
+| build | Build Lead (TDD, cov≥85%, mutación, Playwright+Gherkin) |

@@ -63,12 +63,24 @@
     },
     "e2e": {
       "type": "object",
-      "required": ["executed", "passed"],
+      "required": ["executed", "passed", "tool"],
       "properties": {
         "executed": { "type": "boolean" },
+        "tool": { "type": "string", "const": "playwright" },
         "skipped_reason": { "type": ["string", "null"] },
         "passed": { "type": "boolean" },
-        "command": { "type": "string" }
+        "command": { "type": "string" },
+        "gherkin_scenarios": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "spec": { "type": "string" },
+              "result": { "type": "string", "enum": ["PASS", "FAIL", "N/A"] }
+            }
+          }
+        }
       }
     },
     "gates": {
@@ -78,6 +90,7 @@
         "coverage": { "type": "boolean" },
         "mutation": { "type": "boolean" },
         "e2e": { "type": "boolean" },
+        "testability": { "type": "boolean" },
         "guardrails": { "type": "boolean" },
         "gherkin": { "type": "boolean" }
       }

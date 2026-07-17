@@ -60,7 +60,7 @@ Historia (blueprint)
   Discovery Lead ──► Design Lead ──► Build Lead ──► Deploy Lead
                          active         active         planned
 
-Build: TDD · cobertura ≥85% · mutación · WPs en paralelo · e2e si aplica
+Build: TDD · cobertura ≥85% · mutación · WPs en paralelo · Playwright + Gherkin
 
 Bug
   Bug Lead ────────────────────────► Build Lead ──► Deploy Lead
@@ -97,7 +97,7 @@ memory/
 │   ├── landscape.md|json    ← stack, módulos, fronteras
 │   └── adrs/                ← decisiones (ADR)
 ├── designs/                 ← Design Packages (input de Build)
-├── builds/                  ← Build Reports (TDD / cov / mutación / e2e)
+├── builds/                  ← Build Reports (TDD / cov / mutación / Playwright+Gherkin)
 └── processes/
     ├── discovery|bug|design|build/
 ```
@@ -112,7 +112,7 @@ Futuro en la misma memoria: `adrs/`, `runs/`, …
 3. Discovery Lead → interviewer (clarifica) → scribe (escribe blueprint)
 4. Lead escribe outbox event=complete + path del blueprint
 5. Orquesta lee outbox → actualiza director-state → propone Design Lead
-6. Design → Build (TDD, cov≥85%, mutación, e2e) → Deploy (cuando exista)
+6. Design → Build (TDD, cov≥85%, mutación, Playwright+Gherkin) → Deploy (cuando exista)
 ```
 
 ### 7. Probar en este mismo repo (playground)

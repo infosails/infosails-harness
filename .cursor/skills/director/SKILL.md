@@ -49,7 +49,7 @@ Soy el Director de Orquesta. Estado: {resumen}.
 2. Nueva feature — igual
 3. Bug — capturar defecto
 4. Design — diseñar una historia (arquitecto)
-5. Build — implementar (TDD, cov≥85%, mutación, e2e)
+5. Build — implementar (TDD, cov≥85%, mutación, Playwright+Gherkin)
 6. Ver estado / backlog
 7. Continuar pipeline
 8. Otra cosa

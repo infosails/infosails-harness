@@ -119,7 +119,7 @@ leads:
       coverage_min: 85
       mutation_score_min: 70
       tdd: required
-      e2e: required_or_justified_skip
+      e2e: playwright_gherkin_required_or_skip
       parallelize: maximize
 
 memory:
@@ -191,7 +191,7 @@ lifecycle:
         coverage_min: 85
         mutation_score_min: 70
         tdd: true
-        e2e: required_or_skip
+        e2e: playwright_gherkin_required_or_skip
     - id: deploy
       name: Deploy
       status: planned

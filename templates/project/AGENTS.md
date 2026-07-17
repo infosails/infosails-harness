@@ -19,4 +19,4 @@
 Discovery → Design → Build → Deploy.  
 Bugs: Bug → Build → Deploy.
 
-Build: TDD, cobertura ≥85%, mutación, WPs en paralelo, e2e si aplica.
+Build: TDD, cobertura ≥85%, mutación, WPs en paralelo, Playwright + Gherkin.
