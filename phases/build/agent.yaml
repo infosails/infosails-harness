@@ -1,0 +1,42 @@
+id: build
+name: Build Lead
+phase: build
+version: 0.1.0
+status: active
+role: process_lead
+reports_to: orchestra-director
+
+mission: |
+  Implementar Design Packages con TDD, cobertura ≥85%, mutación,
+  paralelismo de work packages y e2e cuando aplique.
+
+skill: .cursor/skills/build/SKILL.md
+standards: .cursor/skills/build/standards.md
+state: memory/processes/build/state.json
+inbox: memory/processes/build/inbox-from-orchestra.json
+outbox: memory/processes/build/outbox-to-orchestra.json
+
+reads:
+  - memory/designs/
+  - memory/blueprints/
+  - memory/architecture/
+writes:
+  - memory/builds/
+  - (código del producto)
+
+internal_agents:
+  - surveyor
+  - planner
+  - tdd-dev
+  - coverage-gate
+  - mutation
+  - e2e
+  - integrator
+  - scribe
+
+quality_gates:
+  coverage_min: 85
+  mutation_score_min: 70
+  tdd: required
+  e2e: required_or_justified_skip
+  parallel_work_packages: maximize

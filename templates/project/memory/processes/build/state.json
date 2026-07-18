@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "process": "build",
+  "updated_at": "{{CREATED_AT}}",
+  "lead": "build-lead",
+  "status": "idle",
+  "current_agent": null,
+  "agents": {
+    "surveyor": { "role": "Leer DS/BP e inventariar prerrequisitos (claves/accesos)", "status": "idle", "note": null },
+    "planner": { "role": "Work packages paralelizables", "status": "idle", "note": null },
+    "tdd-dev": { "role": "Red→Green→Refactor por WP (seguridad de comportamiento en Red si aplica)", "status": "idle", "note": null },
+    "coverage-gate": { "role": "Cobertura ≥85%", "status": "idle", "note": null },
+    "sast": { "role": "SAST estático (Semgrep u stack); sin bloqueantes in-scope", "status": "idle", "note": null },
+    "mutation": { "role": "Pruebas de mutación", "status": "idle", "note": null },
+    "e2e": { "role": "Playwright + Gherkin del BP; pedir runtime si falta", "status": "idle", "note": null },
+    "integrator": { "role": "Gates finales", "status": "idle", "note": null },
+    "scribe": { "role": "Build Report + outbox", "status": "idle", "note": null }
+  },
+  "working": {
+    "design_package_id": null,
+    "blueprint_id": null,
+    "packages": [],
+    "artifact_id": null,
+    "artifact_path": null
+  },
+  "history": []
+}

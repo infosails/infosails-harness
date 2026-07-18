@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "at": null,
+  "from": "build-lead",
+  "to": "orchestra-director",
+  "event": null,
+  "process": "build",
+  "summary": null,
+  "progress_pct": 0,
+  "artifact": { "type": null, "id": null, "path": null },
+  "next_hint": null,
+  "blocked_reason": null
+}

@@ -16,7 +16,6 @@ Thumbs.db
 # Dependencies / build (si se agregan herramientas locales)
 node_modules/
 dist/
-build/
 .venv/
 __pycache__/
 *.pyc
