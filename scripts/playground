@@ -10,9 +10,11 @@ CREATED_AT="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
 usage() {
   cat <<'EOF'
 Uso:
-  ./scripts/playground          # crea o refresca el playground
-  ./scripts/playground --reset  # borra memoria/estado y recrea en limpio
-  ./scripts/playground --status # muestra si existe y rutas clave
+  ./scripts/playground                      # crea o refresca el playground
+  ./scripts/playground --reset              # borra toda la memoria y recrea en limpio
+  ./scripts/playground --reset-keep-blueprints
+                                            # reset limpio pero conserva memory/blueprints/
+  ./scripts/playground --status             # muestra si existe y rutas clave
 
 El playground vive en ./playground/ (mismo repo del kit).
 No requiere infosails-init ni instalar en la máquina.
@@ -34,6 +36,11 @@ cmd_status() {
   fi
   if [[ -f "$PLAY/memory/backlog.json" ]]; then
     echo "  backlog items: $(grep -c '"id"' "$PLAY/memory/backlog.json" 2>/dev/null || echo 0)"
+  fi
+  if [[ -d "$PLAY/memory/blueprints" ]]; then
+    local bp_count
+    bp_count="$(find "$PLAY/memory/blueprints" -maxdepth 1 -name 'BP-*.md' 2>/dev/null | wc -l | tr -d ' ')"
+    echo "  blueprints: $bp_count"
   fi
 }
 
@@ -129,12 +136,157 @@ setup_skeleton() {
   fi
 }
 
+# Tras un reset, reinyecta blueprints y actualiza backlog + director-state.
+restore_blueprints() {
+  local backup="$1"
+  if [[ ! -d "$backup" ]]; then
+    echo "No había blueprints que conservar."
+    return 0
+  fi
+
+  rm -rf "$PLAY/memory/blueprints"
+  mkdir -p "$PLAY/memory/blueprints"
+  cp -R "$backup"/. "$PLAY/memory/blueprints/"
+
+  python3 - "$PLAY" <<'PY'
+import json, sys
+from pathlib import Path
+from datetime import datetime, timezone
+
+play = Path(sys.argv[1])
+bp_dir = play / "memory" / "blueprints"
+now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+items = []
+artifacts = {}
+index_entries = []
+
+for md in sorted(bp_dir.glob("BP-*.md")):
+    bp_id = md.stem
+    meta = {
+        "id": bp_id,
+        "title": bp_id,
+        "status": "Ready for Design",
+        "epic": "",
+        "created_at": now,
+        "updated_at": now,
+    }
+    js = bp_dir / f"{bp_id}.json"
+    if js.exists():
+        try:
+            data = json.loads(js.read_text(encoding="utf-8"))
+            meta["title"] = data.get("title") or meta["title"]
+            meta["status"] = data.get("status") or meta["status"]
+            meta["epic"] = data.get("epic") or ""
+            meta["created_at"] = data.get("created_at") or meta["created_at"]
+            meta["updated_at"] = data.get("updated_at") or meta["updated_at"]
+        except Exception:
+            pass
+
+    rel_md = f"memory/blueprints/{md.name}"
+    rel_json = f"memory/blueprints/{bp_id}.json" if js.exists() else None
+
+    status = meta["status"]
+    if status in ("Ready for Build", "In Build", "Done"):
+        next_hint = "build"
+        stage = "ready_for_build"
+    elif status in ("Ready for Design", "Draft"):
+        next_hint = "design"
+        stage = "ready_for_design"
+    else:
+        next_hint = "design"
+        stage = "ready_for_design"
+
+    items.append({
+        "id": bp_id,
+        "type": "blueprint",
+        "title": meta["title"],
+        "path": rel_md,
+        "status": "ready",
+        "next_hint": next_hint,
+        "note": "Conservado tras --reset-keep-blueprints",
+        "created_at": meta["created_at"],
+        "updated_at": now,
+    })
+    artifacts[bp_id] = {
+        "type": "blueprint",
+        "path": rel_md,
+        "stage": stage,
+        "next_process": next_hint,
+        "blocked_reason": None,
+    }
+    index_entries.append({
+        "id": bp_id,
+        "title": meta["title"],
+        "path": rel_md,
+        "json_path": rel_json,
+        "status": meta["status"],
+        "epic": meta["epic"],
+        "created_at": meta["created_at"],
+        "updated_at": meta["updated_at"],
+    })
+
+backlog_path = play / "memory" / "backlog.json"
+backlog = {
+    "version": 1,
+    "description": "Cola de trabajo de este proyecto — memoria operativa",
+    "items": items,
+}
+backlog_path.write_text(json.dumps(backlog, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+index_path = bp_dir / "_index.json"
+index = {
+    "version": 1,
+    "description": "Índice de Feature Blueprints — historias a construir",
+    "blueprints": index_entries,
+}
+index_path.write_text(json.dumps(index, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+ds_path = play / "memory" / "director-state.json"
+if ds_path.exists():
+    ds = json.loads(ds_path.read_text(encoding="utf-8"))
+    ds["updated_at"] = now
+    ds["session"] = {
+        "active_process": None,
+        "active_agent": "director",
+        "started_at": None,
+        "note": f"Reset keep-blueprints: {len(index_entries)} BP(s) conservados",
+    }
+    ds["artifacts"] = artifacts
+    if index_entries:
+        first = index_entries[0]
+        hint = artifacts[first["id"]]["next_process"]
+        ds["focus"] = {
+            "artifact_type": "blueprint",
+            "artifact_id": first["id"],
+            "path": first["path"],
+            "pipeline_stage": artifacts[first["id"]]["stage"],
+        }
+    else:
+        ds["focus"] = {
+            "artifact_type": None,
+            "artifact_id": None,
+            "path": None,
+            "pipeline_stage": None,
+        }
+    ds["history"] = []
+    ds_path.write_text(json.dumps(ds, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+print(f"Blueprints restaurados: {len(index_entries)}")
+PY
+}
+
 RESET=0
+RESET_KEEP_BP=0
 STATUS=0
 while [[ $# -gt 0 ]]; do
   case "$1" in
     -h|--help) usage; exit 0 ;;
     --reset) RESET=1; shift ;;
+    --reset-keep-blueprints|--reset-keep-bp)
+      RESET_KEEP_BP=1
+      shift
+      ;;
     --status) STATUS=1; shift ;;
     *) echo "Opción desconocida: $1" >&2; usage; exit 1 ;;
   esac
@@ -145,9 +297,28 @@ if [[ "$STATUS" -eq 1 ]]; then
   exit 0
 fi
 
+if [[ "$RESET" -eq 1 && "$RESET_KEEP_BP" -eq 1 ]]; then
+  echo "Usa solo una: --reset o --reset-keep-blueprints" >&2
+  exit 1
+fi
+
 mkdir -p "$PLAY"
 
-if [[ "$RESET" -eq 1 ]]; then
+BP_BACKUP=""
+if [[ "$RESET_KEEP_BP" -eq 1 ]]; then
+  if [[ -d "$PLAY/memory/blueprints" ]] && find "$PLAY/memory/blueprints" -maxdepth 1 -name 'BP-*.md' | grep -q .; then
+    BP_BACKUP="$(mktemp -d "${TMPDIR:-/tmp}/infosails-bp.XXXXXX")"
+    cp -R "$PLAY/memory/blueprints/." "$BP_BACKUP/"
+    echo "Reset (conservando blueprints): backup en $BP_BACKUP"
+  else
+    echo "Reset (conservando blueprints): no hay BP-*.md; reset limpio"
+  fi
+  setup_skeleton 1
+  if [[ -n "$BP_BACKUP" ]]; then
+    restore_blueprints "$BP_BACKUP"
+    rm -rf "$BP_BACKUP"
+  fi
+elif [[ "$RESET" -eq 1 ]]; then
   echo "Reset: recreando memoria del playground"
   setup_skeleton 1
 else
@@ -166,4 +337,5 @@ echo "  Memoria → playground/memory/"
 echo "  Skills  → symlink al kit"
 echo ""
 echo "En este mismo repo de Cursor: \"hola\" o \"probar playground\""
-echo "Para limpio: ./scripts/playground --reset"
+echo "Limpio total:              ./scripts/playground --reset"
+echo "Limpio + conservar BPs:   ./scripts/playground --reset-keep-blueprints"

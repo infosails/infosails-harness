@@ -49,7 +49,7 @@ Soy el Director de Orquesta. Estado: {resumen}.
 2. Nueva feature — igual
 3. Bug — capturar defecto
 4. Design — diseñar una historia (arquitecto)
-5. Build — implementar (TDD, cov≥85%, mutación, Playwright+Gherkin)
+5. Build — implementar (TDD, cov≥85%, mutación, SAST, Playwright+Gherkin)
 6. Ver estado / backlog
 7. Continuar pipeline
 8. Otra cosa
@@ -76,7 +76,8 @@ Resumen = proceso activo + artefactos waiting. **Sin** nombres de agentes intern
    - history: `activate`
 2. Escribe brief en `memory/processes/<proceso>/inbox-from-orchestra.json` (`command: start|resume`, intent, constraints).
 3. Di: `Activo <Proceso> Lead.`
-4. Carga y sigue el skill del **Lead** (no inventes sub-agentes).
+4. Carga y sigue el skill del **Lead** (no inventes sub-agentes **de la Orquesta**).
+   El Lead puede lanzar **sus** expertos como subagentes en paralelo; eso es interno y no lo orquestas tú.
 5. Cuando el Lead diga que terminó / escriba outbox → **Procesar outbox**.
 
 ## Procesar outbox (obligatorio)

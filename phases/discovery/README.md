@@ -9,9 +9,11 @@
 ## Jerarquía
 
 La Orquesta activa al **Discovery Lead**.  
-El Lead activa `interviewer` (periodista iterativo) → `scribe` (blueprint detallado) y reporta outbox `complete`.
+El Lead activa `interviewer` / scouts / `scribe` como **subagentes** cuando aplique (paralelo si independientes) y reporta outbox `complete`.
 
-Guía de entrevista: `.cursor/skills/discovery/interview.md`.
+Guía de entrevista: `.cursor/skills/discovery/interview.md`  
+(incluye **usuarios**, **tipo de aplicación**, existencia, integraciones exteriores).  
+Subagentes: `.cursor/skills/_shared/lead-subagents.md`.
 
 ## Agentes internos
 

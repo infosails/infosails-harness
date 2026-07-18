@@ -6,7 +6,7 @@
 ## Jerarquía
 
 ```text
-Orquesta → Lead → agentes internos
+Orquesta → Lead → agentes internos (**subagentes ∥**; ver `_shared/lead-subagents.md`)
 ```
 
 No conoce interviewer/scribe/etc.

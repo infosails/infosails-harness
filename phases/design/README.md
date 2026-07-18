@@ -29,4 +29,8 @@ Incluye: reuso vs create, contratos, plan de construcción, paths, guardrails, m
 
 ## Agentes internos
 
-`surveyor` → `architect` → `scribe` — ver `.cursor/skills/design/agents.md`
+`surveyor` → [`architect` ∥ `ui-designer`] → `scribe` — ver `.cursor/skills/design/agents.md`
+
+**UI:** agente `ui-designer` usa `@infosails/design-system` y lee `csf.md` (`.cursor/skills/design/ui-designer.md`).  
+**Diagramas:** `architect` escribe Mermaid (secuencia + componentes) en landscape/ADR/DS — `.cursor/skills/design/diagrams.md`.  
+**Paralelo:** `.cursor/skills/_shared/lead-subagents.md`.

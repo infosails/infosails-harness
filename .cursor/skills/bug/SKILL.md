@@ -1,10 +1,10 @@
 ---
 name: bug
 description: >-
-  Bug Lead of the InfoSails harness. Owns internal bug agents and their state;
-  reports only to the Orchestra Director via outbox. Captures Bug Briefs under
-  memory/bugs/. Use when the Orchestra Director activates Bug, or for
-  bug/defect/fix reports.
+  Bug Lead of the InfoSails harness. Owns internal bug agents as subagents
+  (parallel when independent); reports only to the Orchestra Director via
+  outbox. Captures Bug Briefs under memory/bugs/. Use when the Orchestra
+  Director activates Bug, or for bug/defect/fix reports.
 ---
 
 # Bug Lead
@@ -16,6 +16,7 @@ La Orquesta no conoce triager/scribe.
 - Inbox: `memory/processes/bug/inbox-from-orchestra.json`
 - Outbox: `memory/processes/bug/outbox-to-orchestra.json`
 - Roster: [agents.md](agents.md)
+- Subagentes: [../_shared/lead-subagents.md](../_shared/lead-subagents.md)
 
 **No** edites `memory/director-state.json`. Al terminar → outbox → Orquesta.
 
@@ -23,14 +24,15 @@ La Orquesta no conoce triager/scribe.
 
 1. Leer inbox (`start` | `resume` | `abort`).
 2. `state.status` = `running`.
-3. Activar agentes en orden (encarnas el rol; actualiza estado).
+3. Activar agentes vía **subagentes** cuando sean independientes ([lead-subagents.md](../_shared/lead-subagents.md)); actualizar `state.agents.*`. Fallback: encarnar el rol.
 
 ## Agentes internos
 
-| Orden | Agente | Qué hace |
-|-------|--------|----------|
-| 1 | `triager` | Síntoma, repro, esperado/actual, severidad, guardrails, criterio de cierre |
-| 2 | `scribe` | Escribe `memory/bugs/` tras confirmación |
+| Orden | Agente | Qué hace | Paralelo |
+|-------|--------|----------|----------|
+| 1 | `triager` | Síntoma, repro, esperado/actual, severidad, guardrails, criterio de cierre | no (usuario) |
+| — | `repro-scout` (opcional) | Buscar en código/logs contexto del fallo | **sí** (subagente) mientras el Lead aclara con el usuario |
+| 2 | `scribe` | Escribe `memory/bugs/` tras confirmación | no |
 
 ## Triager
 

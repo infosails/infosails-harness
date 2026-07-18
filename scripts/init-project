@@ -106,6 +106,7 @@ cp -R "$HARNESS_HOME/.cursor/skills/discovery" "$TARGET/.cursor/skills/"
 cp -R "$HARNESS_HOME/.cursor/skills/bug" "$TARGET/.cursor/skills/"
 cp -R "$HARNESS_HOME/.cursor/skills/design" "$TARGET/.cursor/skills/"
 cp -R "$HARNESS_HOME/.cursor/skills/build" "$TARGET/.cursor/skills/"
+cp -R "$HARNESS_HOME/.cursor/skills/_shared" "$TARGET/.cursor/skills/"
 cp "$TEMPLATE/.cursor/rules/"*.mdc "$TARGET/.cursor/rules/"
 
 # Sustituir placeholders

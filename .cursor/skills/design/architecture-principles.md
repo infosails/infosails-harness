@@ -44,3 +44,16 @@ Antes de `propose` un servicio nuevo:
 - [ ] ¿Hay ADR Accepted que lo autorice?
 
 Si no → diseño hexagonal dentro del artefacto existente.
+
+## 5. UI — design system org
+
+- Default: **`@infosails/design-system`** (React + Tailwind v4 + tokens).
+- El agente `ui-designer` lee **`csf.md`**, **perfiles y tipo de app del BP**, y **pregunta sabores/características** (tema, acento, densidad, features, variantes) antes de diseñar.
+- Otra kit UI → solo con **ADR Accepted**.
+- Ver `.cursor/skills/design/ui-designer.md` y `config/harness.yaml` → `org.design_system`.
+
+## 6. Diagramas Mermaid
+
+- El agente `architect` documenta **componentes** y **secuencias** en Mermaid.
+- Obligatorios en landscape (sistema), ADRs con impacto estructural/flujo, y Design Packages.
+- Ver `.cursor/skills/design/diagrams.md`.

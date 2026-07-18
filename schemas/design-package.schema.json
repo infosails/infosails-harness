@@ -162,6 +162,72 @@
         }
       }
     },
+    "ui_design": {
+      "type": "object",
+      "properties": {
+        "verdict": {
+          "type": "string",
+          "enum": ["designed", "ui_skipped"]
+        },
+        "skipped_reason": { "type": ["string", "null"] },
+        "design_system_package": {
+          "type": "string",
+          "const": "@infosails/design-system"
+        },
+        "csf_read": { "type": "boolean" },
+        "flavors": {
+          "type": "object",
+          "description": "Sabores y características del design system acordados con el usuario",
+          "properties": {
+            "theme_default": {
+              "type": "string",
+              "enum": ["light", "dark", "system"]
+            },
+            "theme_toggle": { "type": "boolean" },
+            "brand_accent": { "type": ["string", "null"] },
+            "density": {
+              "type": "string",
+              "enum": ["dense", "medium", "airy"]
+            },
+            "ds_features": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "key_variants": {
+              "type": "object",
+              "additionalProperties": { "type": "string" }
+            },
+            "excluded": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "source": {
+              "type": "string",
+              "description": "usuario | landscape | default_org"
+            }
+          }
+        },
+        "screens": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "route": { "type": ["string", "null"] },
+              "components": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "notes": { "type": ["string", "null"] }
+            }
+          }
+        },
+        "install_tasks": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
     "markdown_path": { "type": "string" },
     "created_at": { "type": "string", "format": "date-time" },
     "updated_at": { "type": "string", "format": "date-time" },

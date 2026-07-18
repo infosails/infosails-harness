@@ -83,7 +83,14 @@ La Orquesta **tiene prohibido**:
 
 1. Usuario ↔ Orquesta  
 2. Orquesta ↔ Lead (brief / outbox)  
-3. Lead ↔ agentes internos  
+3. Lead ↔ agentes internos (**subagentes en paralelo** cuando aplique)
 
 Si un agente interno “termina”, avisa al **Lead**, no a la Orquesta.
 El Lead agrega y reporta hacia arriba.
+
+## Subagentes (Leads)
+
+Todo Lead **puede lanzar** sus agentes expertos como **subagentes** (Task) y **en paralelo** si son independientes.
+Guía común: [../_shared/lead-subagents.md](../_shared/lead-subagents.md).
+
+La Orquesta **no** lista, lanza ni espera subagentes: solo lee el outbox del Lead.

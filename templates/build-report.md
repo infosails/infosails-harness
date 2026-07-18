@@ -4,7 +4,7 @@
 > **Blueprint / Bug:** [BP-ID | BUG-ID]
 > **Status:** Ready for Deploy | Blocked
 > **Creado por:** Build Lead
-> **Estándares:** TDD · cobertura ≥85% · mutación · Playwright + Gherkin
+> **Estándares:** TDD · cobertura ≥85% · mutación · SAST · Playwright + Gherkin
 
 ## 1. Resumen
 * 
@@ -50,6 +50,21 @@ Herramienta + comando:
 ```bash
 ```
 
+## 5b. SAST (análisis estático de seguridad)
+* Herramienta: Semgrep | Bandit | otro:
+* Scope (paths):
+* Ejecutado: sí / blocked
+* Gate (ERROR/HIGH/CRITICAL in-scope): PASS / FAIL
+* Comando:
+
+```bash
+# ej. semgrep --config auto --error <paths>
+```
+
+| Hallazgo | Severidad | Path | In-scope | Acción |
+|----------|-----------|------|----------|--------|
+| | | | sí / preexistente | fix / aceptar / n/a |
+
 ## 6. E2E (Playwright + Gherkin)
 * Herramienta: **Playwright**
 * Ejecutado: sí / skipped
@@ -71,9 +86,10 @@ Herramienta + comando:
 ## 7. Gates
 * [ ] Prerrequisitos (claves/accesos)
 * [ ] Capacidad de probar (Playwright + URL/datos)
-* [ ] TDD
+* [ ] TDD (incl. seguridad de comportamiento si aplica)
 * [ ] Cobertura ≥ 85%
 * [ ] Mutación
+* [ ] SAST (sin bloqueantes in-scope)
 * [ ] E2E Playwright + Gherkin (o skip justificado)
 * [ ] Guardrails DS
 * [ ] Todos los escenarios Gherkin PASS (o N/A)
@@ -92,5 +108,6 @@ Herramienta + comando:
 # tests
 # coverage
 # mutation
+# sast
 # e2e
 ```

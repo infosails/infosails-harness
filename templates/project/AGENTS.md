@@ -1,6 +1,9 @@
 # AGENTS.md — Proyecto InfoSails
 
-**Orquesta → Lead de proceso → agentes internos**
+**Orquesta → Lead de proceso → agentes internos (subagentes ∥)**
+
+Cada Lead puede lanzar expertos como subagentes en paralelo  
+(`.cursor/skills/_shared/lead-subagents.md`).
 
 ## Memoria
 
@@ -19,4 +22,4 @@
 Discovery → Design → Build → Deploy.  
 Bugs: Bug → Build → Deploy.
 
-Build: TDD, cobertura ≥85%, mutación, WPs en paralelo, Playwright + Gherkin.
+Build: TDD, cobertura ≥85%, mutación, SAST, WPs en paralelo, Playwright + Gherkin.

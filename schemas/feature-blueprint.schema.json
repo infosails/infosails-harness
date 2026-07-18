@@ -12,7 +12,10 @@
     "status",
     "created_by",
     "problem",
+    "users",
+    "application_type",
     "existence_inventory",
+    "external_integrations",
     "core",
     "out_of_scope",
     "acceptance_criteria",
@@ -54,6 +57,68 @@
       "minItems": 3,
       "maxItems": 6,
       "items": { "type": "string", "minLength": 1 }
+    },
+    "users": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["primary"],
+      "properties": {
+        "primary": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["role", "goals"],
+          "properties": {
+            "role": { "type": "string" },
+            "goals": { "type": "string" },
+            "context": { "type": ["string", "null"] },
+            "frequency": { "type": ["string", "null"] },
+            "digital_skill": {
+              "type": ["string", "null"],
+              "enum": ["novice", "intermediate", "expert", null]
+            },
+            "device_channel": { "type": ["string", "null"] },
+            "permissions": { "type": ["string", "null"] },
+            "ux_pains": { "type": ["string", "null"] }
+          }
+        },
+        "secondary": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "role": { "type": "string" },
+              "goals": { "type": "string" },
+              "notes": { "type": ["string", "null"] }
+            }
+          }
+        },
+        "non_users": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "application_type": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "justification"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "backoffice | product_web | customer_portal | marketing | mobile_pwa | api_headless | embedded | job_cli | hybrid:…"
+        },
+        "primary_channel": { "type": ["string", "null"] },
+        "surface": {
+          "type": ["string", "null"],
+          "enum": ["new", "extension", null]
+        },
+        "justification": { "type": "string" },
+        "alternatives_considered": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "implications": { "type": ["string", "null"] }
+      }
     },
     "existence_inventory": {
       "type": "object",
@@ -97,6 +162,82 @@
           }
         }
       }
+    },
+    "external_integrations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["has_external"],
+      "properties": {
+        "has_external": { "type": "boolean" },
+        "providers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "integration_types"],
+            "properties": {
+              "name": { "type": "string", "minLength": 1 },
+              "role": {
+                "type": ["string", "null"],
+                "description": "Para qué se usa el proveedor en esta historia"
+              },
+              "integration_types": {
+                "type": "object",
+                "additionalProperties": false,
+                "description": "Matriz completa: cada clave del catálogo debe aparecer",
+                "required": [
+                  "sync_api",
+                  "webhooks",
+                  "redirect_callback",
+                  "sdk",
+                  "hosted_ui_embed",
+                  "batch_files",
+                  "events_queue",
+                  "email_sms_push",
+                  "shared_data_sync",
+                  "system_auth",
+                  "admin_console_vs_in_app",
+                  "environments",
+                  "data_privacy",
+                  "failure_degradation",
+                  "limits_quotas",
+                  "operations"
+                ],
+                "properties": {
+                  "sync_api": { "$ref": "#/$defs/integration_type_entry" },
+                  "webhooks": { "$ref": "#/$defs/integration_type_entry" },
+                  "redirect_callback": { "$ref": "#/$defs/integration_type_entry" },
+                  "sdk": { "$ref": "#/$defs/integration_type_entry" },
+                  "hosted_ui_embed": { "$ref": "#/$defs/integration_type_entry" },
+                  "batch_files": { "$ref": "#/$defs/integration_type_entry" },
+                  "events_queue": { "$ref": "#/$defs/integration_type_entry" },
+                  "email_sms_push": { "$ref": "#/$defs/integration_type_entry" },
+                  "shared_data_sync": { "$ref": "#/$defs/integration_type_entry" },
+                  "system_auth": { "$ref": "#/$defs/integration_type_entry" },
+                  "admin_console_vs_in_app": { "$ref": "#/$defs/integration_type_entry" },
+                  "environments": { "$ref": "#/$defs/integration_type_entry" },
+                  "data_privacy": { "$ref": "#/$defs/integration_type_entry" },
+                  "failure_degradation": { "$ref": "#/$defs/integration_type_entry" },
+                  "limits_quotas": { "$ref": "#/$defs/integration_type_entry" },
+                  "operations": { "$ref": "#/$defs/integration_type_entry" }
+                }
+              }
+            }
+          }
+        },
+        "notes": { "type": ["string", "null"] }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "has_external": { "const": true } } },
+          "then": {
+            "required": ["providers"],
+            "properties": {
+              "providers": { "minItems": 1 }
+            }
+          }
+        }
+      ]
     },
     "core": {
       "type": "array",
@@ -160,6 +301,23 @@
     },
     "notes": {
       "type": "string"
+    }
+  },
+  "$defs": {
+    "integration_type_entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["in_scope"],
+      "properties": {
+        "in_scope": {
+          "type": "string",
+          "enum": ["yes", "no", "n/a", "unknown"]
+        },
+        "detail": {
+          "type": ["string", "null"],
+          "description": "Obligatorio en la práctica cuando in_scope=yes"
+        }
+      }
     }
   }
 }

@@ -5,7 +5,9 @@ alwaysApply: true
 
 # Proyecto InfoSails
 
-Usuario ↔ **Orquesta** ↔ **Lead** ↔ agentes internos.
+Usuario ↔ **Orquesta** ↔ **Lead** ↔ agentes internos (**subagentes** en paralelo si son independientes).
+
+Guía: `.cursor/skills/_shared/lead-subagents.md`
 
 ## Memoria clave
 

@@ -16,6 +16,11 @@
       "status": "idle",
       "note": null
     },
+    "ui-designer": {
+      "role": "UI con @infosails/design-system (csf.md); skip si no hay pantallas",
+      "status": "idle",
+      "note": null
+    },
     "scribe": {
       "role": "Escribir Design Package, ADRs y actualizar landscape si aplica",
       "status": "idle",

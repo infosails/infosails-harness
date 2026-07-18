@@ -12,9 +12,10 @@
 ## 2. Stack actual
 | Capa | Tecnología | Notas |
 |------|------------|-------|
-| Frontend | — | Puede vivir en Vercel y/o GCP |
+| Frontend | — | UI: `@infosails/design-system` (default org) |
 | Backend | — | Puede vivir en Vercel y/o GCP |
 | Datos | — | Según servicio elegido (Vercel o GCP) |
+| Design system | `@infosails/design-system` | CSF: `csf.md` / `@infosails/design-system/csf` |
 | Infra / deploy | Vercel + GCP | Ver §3 |
 
 ## 3. Infraestructura de trabajo
@@ -75,6 +76,22 @@ Design elige **Vercel, GCP o ambos** según el problema — no por “esto es fr
 ## 5. Fronteras e integraciones
 * Internas:
 * Externas (APIs, colas, terceros):
+
+## 5b. Diagramas (Mermaid)
+<!-- Architect: mantener actualizados. Guía: .cursor/skills/design/diagrams.md -->
+
+### Componentes del sistema
+```mermaid
+flowchart TB
+  %% módulos, adapters, externos, nubes
+```
+
+### Secuencia — flujo crítico
+```mermaid
+sequenceDiagram
+  %% actor → adapters → application → domain → externos
+  %% Si aún no hay flujo: dejar nota "pendiente primera historia"
+```
 
 ## 6. Datos y ownership
 | Dato / agregado | Dueño (módulo) | Store (Vercel y/o GCP) |

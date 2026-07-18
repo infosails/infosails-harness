@@ -11,6 +11,7 @@
     "created_by",
     "coverage",
     "mutation",
+    "sast",
     "e2e",
     "gates",
     "markdown_path",
@@ -61,6 +62,30 @@
         "command": { "type": "string" }
       }
     },
+    "sast": {
+      "type": "object",
+      "required": ["executed", "passed", "tool"],
+      "properties": {
+        "executed": { "type": "boolean" },
+        "passed": { "type": "boolean" },
+        "tool": { "type": "string" },
+        "command": { "type": "string" },
+        "blocking_findings": { "type": "number", "minimum": 0 },
+        "findings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "severity": { "type": "string" },
+              "path": { "type": "string" },
+              "in_scope": { "type": "boolean" },
+              "action": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
     "e2e": {
       "type": "object",
       "required": ["executed", "passed", "tool"],
@@ -89,6 +114,7 @@
         "tdd": { "type": "boolean" },
         "coverage": { "type": "boolean" },
         "mutation": { "type": "boolean" },
+        "sast": { "type": "boolean" },
         "e2e": { "type": "boolean" },
         "testability": { "type": "boolean" },
         "guardrails": { "type": "boolean" },
