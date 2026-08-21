@@ -14,11 +14,54 @@ Ejemplos:
   init-project . --into ~/Projects/app-existente   # adopta un repo ya creado
 
 Variables:
-  INFOSAILS_HARNESS_HOME  Ruta al kit (default: directorio padre de scripts/)
+  INFOSAILS_HARNESS_HOME  Fallback si el comando no vive dentro de un kit
 EOF
 }
 
-HARNESS_HOME="${INFOSAILS_HARNESS_HOME:-$(cd "$(dirname "$0")/.." && pwd)}"
+# Preferir el kit del propio comando (siguiendo el symlink). Evita shells con
+# INFOSAILS_HARNESS_HOME viejo tras reinstalar otra versión.
+resolve_script() {
+  local src="$1"
+  if [[ "$src" != /* ]]; then
+    src="$(pwd)/$src"
+  fi
+  while [[ -L "$src" ]]; do
+    local link
+    link="$(readlink "$src")"
+    if [[ "$link" == /* ]]; then
+      src="$link"
+    else
+      src="$(cd "$(dirname "$src")" && pwd)/$link"
+    fi
+  done
+  printf '%s\n' "$src"
+}
+
+SCRIPT_PATH="$(resolve_script "${BASH_SOURCE[0]:-$0}")"
+SCRIPT_KIT="$(cd "$(dirname "$SCRIPT_PATH")/.." && pwd)"
+ENV_KIT="${INFOSAILS_HARNESS_HOME:-}"
+
+if [[ -f "$SCRIPT_KIT/config/harness.yaml" ]]; then
+  HARNESS_HOME="$SCRIPT_KIT"
+  if [[ -n "$ENV_KIT" && "$ENV_KIT" != "$HARNESS_HOME" ]]; then
+    echo "Aviso: INFOSAILS_HARNESS_HOME apunta a:" >&2
+    echo "         $ENV_KIT" >&2
+    echo "       pero infosails-init está en:" >&2
+    echo "         $HARNESS_HOME" >&2
+    echo "       Usando el del comando. Para alinear: source ~/.zshrc (o nueva terminal)." >&2
+  fi
+elif [[ -n "$ENV_KIT" && -f "$ENV_KIT/config/harness.yaml" ]]; then
+  HARNESS_HOME="$ENV_KIT"
+else
+  echo "No encuentro kit InfoSails (config/harness.yaml)." >&2
+  echo "Instalá con ./scripts/install desde un pack/runtime." >&2
+  exit 1
+fi
+
+KIT_VERSION="$(awk '/^version:/{ print $2; exit }' "$HARNESS_HOME/config/harness.yaml" 2>/dev/null || echo "?")"
+KIT_VERSION="${KIT_VERSION%\"}"
+KIT_VERSION="${KIT_VERSION#\"}"
+
 TEMPLATE="$HARNESS_HOME/templates/project"
 NAME=""
 TARGET=""
@@ -73,7 +116,7 @@ else
   mkdir -p "$TARGET"
 fi
 
-echo "Kit:      $HARNESS_HOME"
+echo "Kit:      $HARNESS_HOME (v$KIT_VERSION)"
 echo "Proyecto: $TARGET"
 echo "Nombre:   $NAME"
 
@@ -93,6 +136,7 @@ cp "$HARNESS_HOME/templates/feature-blueprint.md" "$TARGET/templates/feature-blu
 cp "$HARNESS_HOME/templates/design-package.md" "$TARGET/templates/design-package.md"
 cp "$HARNESS_HOME/templates/adr.md" "$TARGET/templates/adr.md"
 cp "$HARNESS_HOME/templates/build-report.md" "$TARGET/templates/build-report.md"
+cp "$HARNESS_HOME/templates/onboard-report.md" "$TARGET/templates/onboard-report.md"
 cp "$HARNESS_HOME/schemas/feature-blueprint.schema.json" "$TARGET/schemas/feature-blueprint.schema.json"
 cp "$HARNESS_HOME/schemas/design-package.schema.json" "$TARGET/schemas/design-package.schema.json"
 cp "$HARNESS_HOME/schemas/build-report.schema.json" "$TARGET/schemas/build-report.schema.json"
@@ -100,14 +144,32 @@ cp "$HARNESS_HOME/schemas/director-state.schema.json" "$TARGET/schemas/director-
 cp "$HARNESS_HOME/schemas/process-lead-state.schema.json" "$TARGET/schemas/process-lead-state.schema.json"
 
 # Agentes y rules del kit → el proyecto puede operar solo en Cursor
+SKILLS_SRC="$HARNESS_HOME/.cursor/skills"
+if [[ ! -d "$SKILLS_SRC" ]]; then
+  SKILLS_SRC="$HARNESS_HOME/skills"  # layout del pack runtime
+fi
+if [[ ! -d "$SKILLS_SRC" ]]; then
+  echo "No encuentro skills en $HARNESS_HOME/.cursor/skills ni $HARNESS_HOME/skills" >&2
+  exit 1
+fi
+
 mkdir -p "$TARGET/.cursor/skills" "$TARGET/.cursor/rules"
-cp -R "$HARNESS_HOME/.cursor/skills/director" "$TARGET/.cursor/skills/"
-cp -R "$HARNESS_HOME/.cursor/skills/discovery" "$TARGET/.cursor/skills/"
-cp -R "$HARNESS_HOME/.cursor/skills/bug" "$TARGET/.cursor/skills/"
-cp -R "$HARNESS_HOME/.cursor/skills/design" "$TARGET/.cursor/skills/"
-cp -R "$HARNESS_HOME/.cursor/skills/build" "$TARGET/.cursor/skills/"
-cp -R "$HARNESS_HOME/.cursor/skills/_shared" "$TARGET/.cursor/skills/"
-cp "$TEMPLATE/.cursor/rules/"*.mdc "$TARGET/.cursor/rules/"
+cp -R "$SKILLS_SRC/director" "$TARGET/.cursor/skills/"
+cp -R "$SKILLS_SRC/discovery" "$TARGET/.cursor/skills/"
+cp -R "$SKILLS_SRC/bug" "$TARGET/.cursor/skills/"
+cp -R "$SKILLS_SRC/design" "$TARGET/.cursor/skills/"
+cp -R "$SKILLS_SRC/build" "$TARGET/.cursor/skills/"
+cp -R "$SKILLS_SRC/onboard" "$TARGET/.cursor/skills/"
+cp -R "$SKILLS_SRC/_shared" "$TARGET/.cursor/skills/"
+RULES_SRC="$TEMPLATE/.cursor/rules"
+if [[ ! -d "$RULES_SRC" ]]; then
+  RULES_SRC="$TEMPLATE/cursor-rules"
+fi
+if [[ ! -d "$RULES_SRC" ]]; then
+  echo "No encuentro rules del template (.cursor/rules ni cursor-rules)" >&2
+  exit 1
+fi
+cp "$RULES_SRC/"*.mdc "$TARGET/.cursor/rules/"
 
 # Sustituir placeholders
 replace_in() {
@@ -135,6 +197,7 @@ replace_in "$TARGET/memory/processes/discovery/state.json"
 replace_in "$TARGET/memory/processes/bug/state.json"
 replace_in "$TARGET/memory/processes/design/state.json"
 replace_in "$TARGET/memory/processes/build/state.json"
+replace_in "$TARGET/memory/processes/onboard/state.json"
 replace_in "$TARGET/memory/architecture/landscape.md"
 replace_in "$TARGET/memory/architecture/landscape.json"
 
@@ -167,6 +230,7 @@ Listo. Proyecto instanciado.
 
   cd "$TARGET"
   # Abre esta carpeta en Cursor y escribe: hola
+  # Si el repo ya tenía código: elige Onboard para hidratar memory/
 
 Memoria (historias) → $TARGET/memory/blueprints/
 Kit de origen       → $HARNESS_HOME

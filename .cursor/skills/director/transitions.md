@@ -30,6 +30,17 @@ in_bug → bug_done → in_build → build_done → in_deploy → done
 
 `bug_done` → `next_process: build` (salta Design salvo que el usuario pida lo contrario).
 
+### Onboard (brownfield)
+
+```text
+in_onboard → onboard_done → (idle; sin siguiente Lead automático)
+```
+
+| Stage | next_process | Notas |
+|-------|--------------|-------|
+| `in_onboard` | — | Onboard running |
+| `onboard_done` | `null` | Memoria hidratada; BPs Done no entran a Design |
+
 ## Disponibilidad de procesos
 
 Si `processes.<id>.availability === "planned"`:
@@ -56,9 +67,9 @@ Cuando un proceso pase de `planned` → `active` en el kit, el Director podrá `
 
 ## Sync con backlog
 
-Tras `complete` de Discovery/Bug/Design/Build, el Director:
+Tras `complete` de Discovery/Bug/Design/Build/Onboard, el Director:
 
-1. Lee el artefacto (`blueprints` | `bugs` | `designs` | `builds`)
+1. Lee el artefacto (`blueprints` | `bugs` | `designs` | `builds` | `onboard`)
 2. Upsert en `artifacts`
-3. Asegura entrada en `memory/backlog.json`
-4. Propone la siguiente transición
+3. Asegura entrada en `memory/backlog.json` (Onboard: solo sync; BPs Done ya vienen del Lead)
+4. Propone la siguiente transición (Onboard → menú; sin delegate automático)

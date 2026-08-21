@@ -9,7 +9,8 @@ Este repositorio es el **kit**. La **memoria del producto** no vive aquí: vive 
 | Versión kit | ver `config/harness.yaml` (`version`) |
 | Entrypoint | Director de Orquesta (`.cursor/skills/director/`) |
 | Instalar | `./scripts/install` → comando `infosails-init` |
-| Probar aquí | `./scripts/playground` |
+| Empaquetar runtime | `./scripts/pack` (sin playground) |
+| Probar aquí | `./scripts/playground` (solo desarrollo del kit) |
 
 ---
 
@@ -81,12 +82,14 @@ flowchart TB
   Orch --> BL[Bug Lead]
   Orch --> DesL[Design Lead]
   Orch --> BuL[Build Lead]
+  Orch --> OnL[Onboard Lead]
   Orch -.-> DepL[Deploy Lead planned]
 
   DL --> DSub["interviewer · user-scout · inventory-scout · scribe"]
   BL --> BSub["triager · repro-scout · scribe"]
   DesL --> DesSub["surveyor · architect ∥ ui-designer · scribe"]
   BuL --> BuSub["surveyor · planner · tdd-dev∥ · coverage · sast∥mutation∥e2e · integrator · scribe"]
+  OnL --> OnSub["code-surveyor ∥ capability-scout ∥ docs-scout · synthesizer · scribe"]
 ```
 
 Reglas duras:
@@ -139,12 +142,21 @@ flowchart LR
   style Dep stroke-dasharray: 5 5
 ```
 
+### Onboard (proyecto ya iniciado)
+
+```mermaid
+flowchart LR
+  O[Onboard] --> Mem["landscape + BPs Done"]
+  Mem --> D[Discovery solo lo nuevo]
+```
+
 | Transición | Siguiente |
 |------------|-----------|
 | `discovery_done` | design |
 | `design_done` | build |
 | `bug_done` | build |
 | `build_done` | deploy |
+| `onboard_done` | — (menú) |
 | `deploy_done` | — |
 
 La Orquesta **activa** y **delega** según `next_hint` del outbox y `config/harness.yaml`.
@@ -194,6 +206,7 @@ flowchart TB
   mem --> arch[architecture/]
   mem --> designs[designs/]
   mem --> builds[builds/]
+  mem --> onboard[onboard/]
   mem --> procs[processes/]
 
   arch --> land[landscape.md + Mermaid]
@@ -202,19 +215,21 @@ flowchart TB
   procs --> p2[bug]
   procs --> p3[design]
   procs --> p4[build]
+  procs --> p5[onboard]
 ```
 
 | Carpeta | Dueño típico | Contenido |
 |---------|--------------|-----------|
-| `blueprints/` | Discovery | Historias: usuarios, tipo de app, inventario, integraciones, Core, Gherkin |
+| `blueprints/` | Discovery / Onboard | Historias; Onboard escribe **Done** (as-built) |
 | `bugs/` | Bug | Bug Briefs |
-| `architecture/` | Design | Landscape, ADRs, as-built, repos, infra |
+| `architecture/` | Design / Onboard | Landscape, ADRs, as-built, repos, infra |
 | `designs/` | Design | Design Packages (input de Build) |
 | `builds/` | Build | Build Reports (gates TDD/cov/mutación/SAST/e2e) |
+| `onboard/` | Onboard | Informe de seed brownfield |
 | `processes/*/` | Cada Lead | state + inbox + outbox |
 | `director-state.json` | Orquesta | Focus, artefactos, procesos, historial |
 
-IDs típicos: `BP-YYYYMMDD-SEQ` · `DS-…` · `BR-…` · `ADR-…` · `BUG-…`
+IDs típicos: `BP-YYYYMMDD-SEQ` · `DS-…` · `BR-…` · `ADR-…` · `BUG-…` · `ONBOARD-…`
 
 ---
 
@@ -402,15 +417,38 @@ Si existe `playground/harness.project.yaml` → `PROJECT_ROOT = playground/`.
 
 ## 10. Instalación y proyectos
 
-### Instalar el kit (una vez)
+### Empaquetar runtime (sin playground)
+
+Para llevar a otra máquina o instalar sin el repo de desarrollo del kit:
 
 ```bash
-cd /ruta/a/infosails-harness
+./scripts/pack
+# → dist/infosails-harness-<version>/
+# → dist/infosails-harness-<version>.tar.gz
+
+./scripts/pack --install          # pack + install en esta máquina
+./scripts/pack --out ~/kits/is --no-archive
+```
+
+Incluye solo: `config/`, `skills/`, `templates/`, `schemas/`, `scripts/install`, `scripts/init-project`.  
+**No incluye:** `playground/`, `scripts/playground`, `phases/`.
+
+En el pack las skills van en `skills/` (portable); `infosails-init` también acepta `.cursor/skills` del repo kit.  
+Manifest: `config/pack.manifest`.
+
+### Instalar el kit (una vez)
+
+Desde el **repo del kit** o desde un **pack runtime**:
+
+```bash
+cd /ruta/al-kit-o-al-pack
 ./scripts/install
 source ~/.zshrc   # o la rc de tu shell
 ```
 
 Quedan: comando `infosails-init` y `INFOSAILS_HARNESS_HOME`.
+
+Para trabajar en proyectos reales no necesitás el playground: instalá el runtime (o el pack) y usá `infosails-init`.
 
 ### Proyecto nuevo
 
@@ -424,9 +462,15 @@ cd ~/Projects/mi-app
 
 ```bash
 infosails-init . --into ~/Projects/app-existente
+cd ~/Projects/app-existente
+# Abrir en Cursor → "hola" → opción Onboard
 ```
 
-Crea: `memory/`, `.cursor/skills/` (incluye `_shared/`), `harness.project.yaml`, templates, schemas.
+Crea: `memory/`, `.cursor/skills/` (incluye `_shared/` y **onboard**), `harness.project.yaml`, templates, schemas.
+
+**Repos del producto:** si no están en `harness.project.yaml` ni en el chat, **Onboard pregunta** antes de escanear. También podés declararlas en YAML o al activar (`Onboard con repos: web → ., api → ../mi-api`).
+
+Luego el **Onboard Lead** genera solo lo que falta en memoria: landscape, capacidades as-built como blueprints **Done**, índices, backlog e informe `memory/onboard/`. No inventa Design Packages ni Build Reports con gates falsos.
 
 ---
 
@@ -443,15 +487,18 @@ infosails-harness/
 │   ├── bug/
 │   ├── design/               ← + ui-designer, diagrams, principles
 │   ├── build/                ← + standards, sast
+│   ├── onboard/              ← seed brownfield
 │   └── _shared/              ← lead-subagents.md
-├── templates/                ← blueprints, DS, ADR, build-report, project/
+├── templates/                ← blueprints, DS, ADR, build-report, onboard, project/
 ├── schemas/                  ← JSON Schema de artefactos
 ├── scripts/
 │   ├── install
 │   ├── init-project          ← infosails-init
-│   └── playground
-├── phases/                   ← docs por fase
-└── playground/               ← proyecto de prueba (generado)
+│   ├── pack                  ← runtime sin playground
+│   └── playground            ← solo desarrollo del kit
+├── phases/                   ← docs por fase (no va en el pack)
+├── playground/               ← prueba local (no va en el pack)
+└── dist/                     ← salida de ./scripts/pack (gitignored)
 ```
 
 ---
@@ -466,6 +513,7 @@ infosails-harness/
 | Bug | Bug Lead | `memory/bugs/` | active |
 | Design | Design Lead | `memory/designs/` + `memory/architecture/` | active |
 | Build | Build Lead | código + `memory/builds/` | active |
+| Onboard | Onboard Lead | landscape + BPs Done + `memory/onboard/` | active |
 | Deploy | — | — | planned |
 
 ### Skills y guías
@@ -491,4 +539,5 @@ infosails-harness/
 | Design Package | `templates/design-package.md` |
 | ADR | `templates/adr.md` |
 | Build Report | `templates/build-report.md` |
+| Onboard Report | `templates/onboard-report.md` |
 | Landscape | `templates/project/memory/architecture/landscape.md` |

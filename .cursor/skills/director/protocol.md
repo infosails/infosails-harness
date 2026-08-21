@@ -52,7 +52,7 @@ Archivo: `memory/processes/<proceso>/outbox-to-orchestra.json`
   "summary": "una frase para el humano/orquesta",
   "progress_pct": 0,
   "artifact": {
-    "type": "blueprint | bug | null",
+    "type": "blueprint | bug | onboard | null",
     "id": null,
     "path": null
   },

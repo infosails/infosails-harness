@@ -64,8 +64,10 @@ setup_skeleton() {
     [[ -d "$PLAY/memory/designs" ]] || cp -R "$TEMPLATE/memory/designs" "$PLAY/memory/designs"
     [[ -d "$PLAY/memory/processes/design" ]] || cp -R "$TEMPLATE/memory/processes/design" "$PLAY/memory/processes/design"
     [[ -d "$PLAY/memory/processes/build" ]] || cp -R "$TEMPLATE/memory/processes/build" "$PLAY/memory/processes/build"
+    [[ -d "$PLAY/memory/processes/onboard" ]] || cp -R "$TEMPLATE/memory/processes/onboard" "$PLAY/memory/processes/onboard"
     [[ -d "$PLAY/memory/builds" ]] || cp -R "$TEMPLATE/memory/builds" "$PLAY/memory/builds"
-    # Activar design/build en director-state si siguen planned
+    [[ -d "$PLAY/memory/onboard" ]] || cp -R "$TEMPLATE/memory/onboard" "$PLAY/memory/onboard"
+    # Activar design/build/onboard en director-state si siguen planned o faltan
     if [[ "$(uname)" == "Darwin" ]]; then
       sed -i '' \
         -e 's/"design": { "availability": "planned"/"design": { "availability": "active"/' \
@@ -76,6 +78,16 @@ setup_skeleton() {
         -e 's/"design": { "availability": "planned"/"design": { "availability": "active"/' \
         -e 's/"build": { "availability": "planned"/"build": { "availability": "active"/' \
         "$PLAY/memory/director-state.json" 2>/dev/null || true
+    fi
+    if [[ -f "$PLAY/memory/director-state.json" ]] && ! grep -q '"onboard"' "$PLAY/memory/director-state.json"; then
+      python3 - "$PLAY/memory/director-state.json" <<'PY'
+import json, sys
+from pathlib import Path
+p = Path(sys.argv[1])
+ds = json.loads(p.read_text(encoding="utf-8"))
+ds.setdefault("processes", {})["onboard"] = {"availability": "active", "status": "idle"}
+p.write_text(json.dumps(ds, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+PY
     fi
   fi
 
@@ -95,6 +107,7 @@ setup_skeleton() {
   link_or_copy "$HARNESS_HOME/templates/adr.md" "$PLAY/templates/adr.md"
   link_or_copy "$HARNESS_HOME/schemas/feature-blueprint.schema.json" "$PLAY/schemas/feature-blueprint.schema.json"
   link_or_copy "$HARNESS_HOME/templates/build-report.md" "$PLAY/templates/build-report.md"
+  link_or_copy "$HARNESS_HOME/templates/onboard-report.md" "$PLAY/templates/onboard-report.md"
   link_or_copy "$HARNESS_HOME/schemas/design-package.schema.json" "$PLAY/schemas/design-package.schema.json"
   link_or_copy "$HARNESS_HOME/schemas/build-report.schema.json" "$PLAY/schemas/build-report.schema.json"
   link_or_copy "$HARNESS_HOME/schemas/director-state.schema.json" "$PLAY/schemas/director-state.schema.json"
@@ -114,6 +127,7 @@ setup_skeleton() {
   fi
   [[ -f "$PLAY/memory/processes/design/state.json" ]] && files+=("$PLAY/memory/processes/design/state.json")
   [[ -f "$PLAY/memory/processes/build/state.json" ]] && files+=("$PLAY/memory/processes/build/state.json")
+  [[ -f "$PLAY/memory/processes/onboard/state.json" ]] && files+=("$PLAY/memory/processes/onboard/state.json")
   [[ -f "$PLAY/memory/architecture/landscape.md" ]] && files+=("$PLAY/memory/architecture/landscape.md")
   [[ -f "$PLAY/memory/architecture/landscape.json" ]] && files+=("$PLAY/memory/architecture/landscape.json")
 

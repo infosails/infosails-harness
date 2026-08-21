@@ -14,6 +14,7 @@ Guía: `.cursor/skills/_shared/lead-subagents.md`
 - Historias: `memory/blueprints/`
 - Arquitectura del producto: `memory/architecture/` (landscape + ADRs)
 - Diseño por historia: `memory/designs/`
+- Seed brownfield: `memory/onboard/`
 - Estado orquesta: `memory/director-state.json`
 
-Design Lead lee landscape/ADRs/infra antes de proponer; Build Lead implementa con TDD, cov≥85%, mutación y e2e; consume Design Packages.
+Design Lead lee landscape/ADRs/infra antes de proponer; Build Lead implementa con TDD, cov≥85%, mutación y e2e; consume Design Packages. Onboard Lead hidrata landscape + BPs Done desde un repo ya iniciado.

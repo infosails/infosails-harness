@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "at": null,
+  "from": "onboard-lead",
+  "to": "orchestra-director",
+  "event": null,
+  "process": "onboard",
+  "summary": null,
+  "progress_pct": null,
+  "artifact": {
+    "type": null,
+    "id": null,
+    "path": null
+  },
+  "next_hint": null,
+  "blocked_reason": null
+}

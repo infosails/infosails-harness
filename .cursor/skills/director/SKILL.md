@@ -50,9 +50,10 @@ Soy el Director de Orquesta. Estado: {resumen}.
 3. Bug — capturar defecto
 4. Design — diseñar una historia (arquitecto)
 5. Build — implementar (TDD, cov≥85%, mutación, SAST, Playwright+Gherkin)
-6. Ver estado / backlog
-7. Continuar pipeline
-8. Otra cosa
+6. Onboard — hidratar memoria desde proyecto ya iniciado
+7. Ver estado / backlog
+8. Continuar pipeline
+9. Otra cosa
 ```
 
 Resumen = proceso activo + artefactos waiting. **Sin** nombres de agentes internos.
@@ -65,6 +66,7 @@ Resumen = proceso activo + artefactos waiting. **Sin** nombres de agentes intern
 | bug | Bug Lead | `.cursor/skills/bug/SKILL.md` | active |
 | design | Design Lead | `.cursor/skills/design/SKILL.md` | active |
 | build | Build Lead | `.cursor/skills/build/SKILL.md` | active |
+| onboard | Onboard Lead | `.cursor/skills/onboard/SKILL.md` | active |
 | deploy | Deploy Lead | (pendiente) | planned |
 
 ## Activar un Lead
@@ -75,6 +77,7 @@ Resumen = proceso activo + artefactos waiting. **Sin** nombres de agentes intern
    - `processes.<proceso>.status` = `running`
    - history: `activate`
 2. Escribe brief en `memory/processes/<proceso>/inbox-from-orchestra.json` (`command: start|resume`, intent, constraints).
+   - Si el usuario eligió **Onboard** y listó repos en el chat, pásalos en `constraints` (paths/ids/roles) además del intent.
 3. Di: `Activo <Proceso> Lead.`
 4. Carga y sigue el skill del **Lead** (no inventes sub-agentes **de la Orquesta**).
    El Lead puede lanzar **sus** expertos como subagentes en paralelo; eso es interno y no lo orquestas tú.
@@ -110,6 +113,13 @@ Tras `complete` de Build:
 - Proponer **Deploy Lead** (si planned → cola waiting)
 
 Tras `complete` de Bug: `bug_done` → `next_process: build`.
+
+Tras `complete` de Onboard:
+
+- stage `onboard_done`, `next_process: null`
+- Registrar artefacto tipo `onboard` (`ONBOARD-…`)
+- Decir al usuario el `summary` (landscape + BPs Done)
+- Menú: Discovery para historias nuevas; Design solo si hay BP Ready
 
 **No** inspecciones cómo el Lead llegó ahí (qué agente interno corrió).
 

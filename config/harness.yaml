@@ -3,7 +3,7 @@
 
 name: infosails-harness
 kind: kit
-version: 0.8.0
+version: 0.10.3
 description: Kit instalable para desarrollo basado en agentes
 
 model:
@@ -23,6 +23,15 @@ install:
   init_project: scripts/init-project
   command: infosails-init
   project_template: templates/project
+  pack:
+    script: scripts/pack
+    manifest: config/pack.manifest
+    output: dist/infosails-harness-{version}
+    excludes: [playground, scripts/playground, phases, .cursor]
+    note: |
+      Runtime para partir proyectos. El playground solo existe en el repo
+      de desarrollo del kit; no va en el pack ni hace falta para infosails-init.
+      Skills del pack: skills/ (init también lee .cursor/skills del repo kit).
 
 orchestrator:
   agent: director
@@ -45,6 +54,7 @@ orchestrator:
     design_done: build
     bug_done: build
     build_done: deploy
+    onboard_done: null
     deploy_done: null
   intents:
     discovery:
@@ -75,6 +85,13 @@ orchestrator:
       skill: .cursor/skills/build/SKILL.md
       status: active
       aliases: [build, implementar, tdd, coding]
+      activated_by: orchestra-director
+    onboard:
+      process: onboard
+      lead: onboard-lead
+      skill: .cursor/skills/onboard/SKILL.md
+      status: active
+      aliases: [onboard, brownfield, hidratar, adoptar, seed, proyecto existente]
       activated_by: orchestra-director
     deploy:
       process: deploy
@@ -129,6 +146,15 @@ leads:
       sast: required_blocking_findings_fail
       e2e: playwright_gherkin_required_or_skip
       parallelize: maximize
+  onboard-lead:
+    process: onboard
+    skill: .cursor/skills/onboard/SKILL.md
+    state: memory/processes/onboard/state.json
+    inbox: memory/processes/onboard/inbox-from-orchestra.json
+    outbox: memory/processes/onboard/outbox-to-orchestra.json
+    internal_agents: [code-surveyor, capability-scout, docs-scout, synthesizer, scribe]
+    reads: [code, docs]
+    writes: [memory/architecture, memory/blueprints, memory/backlog, memory/onboard]
 
 memory:
   root: memory
@@ -137,6 +163,7 @@ memory:
   bugs: memory/bugs
   designs: memory/designs
   builds: memory/builds
+  onboard: memory/onboard
   architecture: memory/architecture
   landscape: memory/architecture/landscape.md
   adrs: memory/architecture/adrs
@@ -145,8 +172,9 @@ memory:
   rule: |
     director-state: solo Orquesta.
     processes/*/state: solo el Lead.
-    architecture/: Design Lead (y humano).
+    architecture/: Design Lead (y Onboard seed / humano).
     designs/: Design Lead → input de Build.
+    onboard/: Onboard Lead (informe de seed).
 
 # Nubes de la organización (Design debe respetar)
 org:
@@ -214,6 +242,12 @@ lifecycle:
         tdd: true
         sast: required_blocking_findings_fail
         e2e: playwright_gherkin_required_or_skip
+    - id: onboard
+      name: Onboard
+      status: active
+      input: [code, docs]
+      output: [memory/architecture/, memory/blueprints/, memory/onboard/]
+      next: null
     - id: deploy
       name: Deploy
       status: planned
@@ -224,6 +258,7 @@ paths:
   blueprint_template: templates/feature-blueprint.md
   design_package_template: templates/design-package.md
   adr_template: templates/adr.md
+  onboard_report_template: templates/onboard-report.md
   schema: schemas/feature-blueprint.schema.json
   design_schema: schemas/design-package.schema.json
   director_state_schema: schemas/director-state.schema.json
@@ -234,6 +269,8 @@ blueprint:
   id_pattern: "BP-{YYYYMMDD}-{SEQ:03d}"
   default_status: "Ready for Build"
   discovery_agent_name: "Discovery Lead"
+  onboard_status: "Done"
+  onboard_agent_name: "Onboard Lead"
 
 design_package:
   format: markdown
@@ -252,6 +289,12 @@ bug_brief:
   id_pattern: "BUG-{YYYYMMDD}-{SEQ:03d}"
   default_status: "Ready for Fix"
   bug_agent_name: "Bug Lead"
+
+onboard_report:
+  format: markdown
+  id_pattern: "ONBOARD-{YYYYMMDD}-{SEQ:03d}"
+  path: memory/onboard
+  onboard_agent_name: "Onboard Lead"
 
 agents:
   director:
@@ -281,3 +324,9 @@ agents:
     reports_to: director
     output_dir: memory/builds
     standards: .cursor/skills/build/standards.md
+  onboard-lead:
+    skill: .cursor/skills/onboard/SKILL.md
+    role: process_lead
+    process: onboard
+    reports_to: director
+    output_dir: memory/onboard

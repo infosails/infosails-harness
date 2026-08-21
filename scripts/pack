@@ -1,0 +1,202 @@
+#!/usr/bin/env bash
+# Empaqueta el runtime del kit (lo necesario para infosails-init / proyectos).
+# Excluye playground y tooling solo útil al desarrollar el kit.
+set -euo pipefail
+
+HARNESS_HOME="$(cd "$(dirname "$0")/.." && pwd)"
+VERSION="$(
+  awk '/^version:/{ print $2; exit }' "$HARNESS_HOME/config/harness.yaml" 2>/dev/null || echo "0.0.0"
+)"
+VERSION="${VERSION%\"}"
+VERSION="${VERSION#\"}"
+
+OUT_DIR=""
+ARCHIVE=1
+INSTALL_AFTER=0
+
+usage() {
+  cat <<'EOF'
+Uso:
+  ./scripts/pack [--out <dir>] [--no-archive] [--install]
+
+Genera un kit runtime listo para instalar en otra máquina o ruta limpia.
+No incluye playground ni scripts de prueba del kit.
+
+Opciones:
+  --out <dir>     Destino (default: dist/infosails-harness-<version>)
+  --no-archive    Solo carpeta; no crear .tar.gz
+  --install       Tras empaquetar, corre install apuntando al pack
+
+Ejemplos:
+  ./scripts/pack
+  ./scripts/pack --out ~/kits/infosails-runtime --install
+EOF
+}
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -h|--help) usage; exit 0 ;;
+    --out) OUT_DIR="${2:-}"; shift 2 ;;
+    --no-archive) ARCHIVE=0; shift ;;
+    --install) INSTALL_AFTER=1; shift ;;
+    -*)
+      echo "Opción desconocida: $1" >&2
+      usage
+      exit 1
+      ;;
+    *)
+      echo "Argumento extra: $1" >&2
+      usage
+      exit 1
+      ;;
+  esac
+done
+
+if [[ -z "$OUT_DIR" ]]; then
+  OUT_DIR="$HARNESS_HOME/dist/infosails-harness-$VERSION"
+fi
+
+# Resolver absoluto
+mkdir -p "$(dirname "$OUT_DIR")"
+OUT_DIR="$(mkdir -p "$OUT_DIR" && cd "$OUT_DIR" && pwd)"
+
+echo "Kit fuente:  $HARNESS_HOME"
+echo "Versión:     $VERSION"
+echo "Destino:     $OUT_DIR"
+
+# Limpiar destino (solo contenido del pack)
+if [[ -d "$OUT_DIR" ]]; then
+  rm -rf "${OUT_DIR:?}/"*
+  rm -rf "${OUT_DIR:?}/".[!.]* "${OUT_DIR:?}/"..?* 2>/dev/null || true
+fi
+mkdir -p "$OUT_DIR"
+OUT_DIR="$(cd "$OUT_DIR" && pwd)"
+
+copy_tree() {
+  local src="$1" dest="$2"
+  mkdir -p "$dest"
+  if command -v rsync >/dev/null 2>&1; then
+    rsync -a --delete "$src"/ "$dest"/
+  else
+    rm -rf "$dest"
+    mkdir -p "$(dirname "$dest")"
+    cp -R "$src" "$dest"
+  fi
+}
+
+# templates/ sin .cursor (portable); rules van a project/cursor-rules/
+copy_templates() {
+  local dest="$OUT_DIR/templates"
+  rm -rf "$dest"
+  mkdir -p "$dest"
+  if command -v tar >/dev/null 2>&1; then
+    (cd "$HARNESS_HOME/templates" && tar cf - --exclude='.cursor' .) | (cd "$dest" && tar xf -)
+  else
+    copy_tree "$HARNESS_HOME/templates" "$dest"
+    rm -rf "$dest/project/.cursor"
+  fi
+  mkdir -p "$dest/project/cursor-rules"
+  cp "$HARNESS_HOME/templates/project/.cursor/rules/"*.mdc "$dest/project/cursor-rules/"
+}
+
+# --- Runtime include list (ver config/pack.manifest) ---
+# skills/ + cursor-rules/ (sin .cursor/) para un layout portable.
+mkdir -p "$OUT_DIR/config" "$OUT_DIR/scripts" "$OUT_DIR/skills"
+
+cp "$HARNESS_HOME/config/harness.yaml" "$OUT_DIR/config/harness.yaml"
+copy_tree "$HARNESS_HOME/.cursor/skills" "$OUT_DIR/skills"
+copy_templates
+copy_tree "$HARNESS_HOME/schemas" "$OUT_DIR/schemas"
+
+cp "$HARNESS_HOME/scripts/install" "$OUT_DIR/scripts/install"
+cp "$HARNESS_HOME/scripts/init-project" "$OUT_DIR/scripts/init-project"
+chmod +x "$OUT_DIR/scripts/install" "$OUT_DIR/scripts/init-project"
+
+# Manifest de lo excluido / incluido
+cp "$HARNESS_HOME/config/pack.manifest" "$OUT_DIR/config/pack.manifest" 2>/dev/null || true
+
+# README del paquete (sin playground)
+cat > "$OUT_DIR/README.md" <<EOF
+# InfoSails Harness — runtime $VERSION
+
+Paquete **solo para partir proyectos**. No incluye playground ni tooling del repo de desarrollo del kit.
+
+## Instalar
+
+\`\`\`bash
+cd "$(basename "$OUT_DIR")"
+./scripts/install
+source ~/.zshrc   # o tu shell rc
+\`\`\`
+
+## Crear proyecto
+
+\`\`\`bash
+infosails-init mi-app --path ~/Projects/mi-app
+\`\`\`
+
+## Adoptar repo existente
+
+\`\`\`bash
+infosails-init . --into ~/Projects/app-existente
+\`\`\`
+
+Luego abrí el proyecto en Cursor y escribí \`hola\`.
+Para brownfield: opción **Onboard** (declará repos en \`harness.project.yaml\` si aplica).
+
+## Contenido
+
+| Path | Rol |
+|------|-----|
+| \`config/\` | Lifecycle / leads |
+| \`skills/\` | Orquesta + Leads (equiv. a \`.cursor/skills\` en el repo kit) |
+| \`templates/\` | Proyecto + artefactos (\`project/cursor-rules/\` = rules) |
+| \`schemas/\` | JSON Schema |
+| \`scripts/install\` | PATH + \`INFOSAILS_HARNESS_HOME\` |
+| \`scripts/init-project\` | \`infosails-init\` |
+
+**No viene:** \`playground/\`, \`scripts/playground\`, \`phases/\` (docs del kit), rules del repo kit.
+EOF
+
+cat > "$OUT_DIR/AGENTS.md" <<'EOF'
+# AGENTS.md — InfoSails Harness (runtime)
+
+Usuario ↔ Orquesta ↔ Lead ↔ agentes internos (subagentes).
+
+Skills: `skills/` (runtime) o `.cursor/skills/` (repo kit).
+
+Proyecto: `infosails-init` → repo con `memory/` + skills copiados.
+EOF
+
+# Marca de pack
+cat > "$OUT_DIR/config/runtime.json" <<EOF
+{
+  "kind": "infosails-harness-runtime",
+  "version": "$VERSION",
+  "packed_at": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
+  "source": "infosails-harness",
+  "includes_playground": false
+}
+EOF
+
+echo ""
+echo "Runtime listo en: $OUT_DIR"
+
+ARCHIVE_PATH=""
+if [[ "$ARCHIVE" -eq 1 ]]; then
+  PARENT="$(dirname "$OUT_DIR")"
+  BASE="$(basename "$OUT_DIR")"
+  ARCHIVE_PATH="$PARENT/$BASE.tar.gz"
+  tar -czf "$ARCHIVE_PATH" -C "$PARENT" "$BASE"
+  echo "Archivo: $ARCHIVE_PATH"
+fi
+
+if [[ "$INSTALL_AFTER" -eq 1 ]]; then
+  echo ""
+  echo "Instalando desde el pack…"
+  INFOSAILS_HARNESS_HOME="$OUT_DIR" "$OUT_DIR/scripts/install"
+fi
+
+echo ""
+echo "Para trabajar en un proyecto: instalá este pack (o apuntá INFOSAILS_HARNESS_HOME a él)."
+echo "El playground solo vive en el repo de desarrollo del kit."

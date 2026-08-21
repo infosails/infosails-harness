@@ -1,0 +1,18 @@
+id: onboard
+name: Onboard
+status: active
+lead: onboard-lead
+skill: .cursor/skills/onboard/SKILL.md
+description: >
+  Hidratar memoria desde un proyecto ya iniciado (landscape, BPs Done, informe).
+state: memory/processes/onboard/state.json
+inbox: memory/processes/onboard/inbox-from-orchestra.json
+outbox: memory/processes/onboard/outbox-to-orchestra.json
+reads:
+  - code
+  - docs
+writes:
+  - memory/architecture/
+  - memory/blueprints/
+  - memory/backlog.json
+  - memory/onboard/

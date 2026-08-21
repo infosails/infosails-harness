@@ -7,6 +7,10 @@ BIN_DIR="${INFOSAILS_BIN_DIR:-$HOME/.local/bin}"
 MARKER_BEGIN="# >>> infosails-harness >>>"
 MARKER_END="# <<< infosails-harness <<<"
 
+VERSION="$(awk '/^version:/{ print $2; exit }' "$HARNESS_HOME/config/harness.yaml" 2>/dev/null || echo "?")"
+VERSION="${VERSION%\"}"
+VERSION="${VERSION#\"}"
+
 mkdir -p "$BIN_DIR"
 ln -sfn "$HARNESS_HOME/scripts/init-project" "$BIN_DIR/infosails-init"
 chmod +x "$HARNESS_HOME/scripts/init-project" "$BIN_DIR/infosails-init"
@@ -27,36 +31,58 @@ $MARKER_END
 EOF
 )
 
-touch "$RC_FILE"
-if grep -q "$MARKER_BEGIN" "$RC_FILE" 2>/dev/null; then
-  # Actualizar bloque existente
+# Reemplaza o inserta el bloque sin awk -v multilinea (falla en awk de macOS).
+upsert_rc_block() {
+  local rc="$1"
+  local tmp
   tmp="$(mktemp)"
-  awk -v begin="$MARKER_BEGIN" -v end="$MARKER_END" -v block="$BLOCK" '
-    $0 == begin { skip=1; print block; next }
-    $0 == end { skip=0; next }
-    !skip { print }
-  ' "$RC_FILE" > "$tmp"
-  mv "$tmp" "$RC_FILE"
-  echo "Actualizado bloque InfoSails en $RC_FILE"
-else
-  printf "\n%s\n" "$BLOCK" >> "$RC_FILE"
-  echo "Añadido bloque InfoSails en $RC_FILE"
-fi
+  touch "$rc"
+
+  if grep -qF "$MARKER_BEGIN" "$rc" 2>/dev/null; then
+    local skip=0
+    while IFS= read -r line || [[ -n "$line" ]]; do
+      if [[ "$line" == "$MARKER_BEGIN" ]]; then
+        skip=1
+        printf '%s\n' "$BLOCK"
+        continue
+      fi
+      if [[ "$line" == "$MARKER_END" ]]; then
+        skip=0
+        continue
+      fi
+      if [[ "$skip" -eq 0 ]]; then
+        printf '%s\n' "$line"
+      fi
+    done < "$rc" > "$tmp"
+    mv "$tmp" "$rc"
+    echo "Actualizado bloque InfoSails en $rc"
+  else
+    rm -f "$tmp"
+    printf '\n%s\n' "$BLOCK" >> "$rc"
+    echo "Añadido bloque InfoSails en $rc"
+  fi
+}
+
+upsert_rc_block "$RC_FILE"
 
 cat <<EOF
 
 Instalación del kit OK.
 
+  Versión:                 $VERSION
   INFOSAILS_HARNESS_HOME=$HARNESS_HOME
-  Comando: infosails-init
+  Comando:                 infosails-init
+  Symlink:                 $BIN_DIR/infosails-init → $HARNESS_HOME/scripts/init-project
 
-Recarga la shell:
+Recarga la shell (importante si actualizás de versión):
 
   source $RC_FILE
+  # o abrí una terminal nueva
 
-Luego crea un proyecto:
+Luego crea o adopta un proyecto:
 
   infosails-init mi-app --path ~/Projects/mi-app
+  infosails-init . --into ~/Projects/app-existente
 
 La memoria (historias) quedará en el repo del proyecto, no en el kit.
 

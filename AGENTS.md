@@ -19,3 +19,4 @@ Si existe `playground/harness.project.yaml` → `PROJECT_ROOT = playground/`.
 | bug | Bug Lead |
 | design | Design Lead (hexagonal + Mermaid + ui-designer / `@infosails/design-system`) |
 | build | Build Lead (TDD, cov≥85%, mutación, SAST, Playwright+Gherkin) |
+| onboard | Onboard Lead (hidratar memoria desde proyecto ya iniciado) |

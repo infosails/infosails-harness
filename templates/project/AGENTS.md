@@ -15,11 +15,13 @@ Cada Lead puede lanzar expertos como subagentes en paralelo
 | `memory/architecture/` | Landscape + ADRs |
 | `memory/designs/` | Design Packages |
 | `memory/builds/` | Build Reports |
+| `memory/onboard/` | Informes de seed (Onboard) |
 | `memory/processes/` | Estado/inbox/outbox por Lead |
 
 ## Pipeline
 
 Discovery → Design → Build → Deploy.  
-Bugs: Bug → Build → Deploy.
+Bugs: Bug → Build → Deploy.  
+Brownfield: Onboard → (memoria as-is) → Discovery solo para lo nuevo.
 
 Build: TDD, cobertura ≥85%, mutación, SAST, WPs en paralelo, Playwright + Gherkin.

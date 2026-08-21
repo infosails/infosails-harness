@@ -16,7 +16,7 @@
       "properties": {
         "active_process": {
           "type": ["string", "null"],
-          "enum": [null, "discovery", "bug", "design", "build", "deploy"]
+          "enum": [null, "discovery", "bug", "design", "build", "onboard", "deploy"]
         },
         "active_agent": {
           "type": "string",
@@ -32,7 +32,7 @@
       "properties": {
         "artifact_type": {
           "type": ["string", "null"],
-          "enum": [null, "blueprint", "bug"]
+          "enum": [null, "blueprint", "bug", "onboard"]
         },
         "artifact_id": { "type": ["string", "null"] },
         "path": { "type": ["string", "null"] },
@@ -48,6 +48,8 @@
             "bug_done",
             "in_build",
             "build_done",
+            "in_onboard",
+            "onboard_done",
             "in_deploy",
             "done",
             "blocked"
@@ -61,12 +63,12 @@
         "type": "object",
         "required": ["type", "path", "stage", "next_process"],
         "properties": {
-          "type": { "type": "string", "enum": ["blueprint", "bug"] },
+          "type": { "type": "string", "enum": ["blueprint", "bug", "onboard"] },
           "path": { "type": "string" },
           "stage": { "type": "string" },
           "next_process": {
             "type": ["string", "null"],
-            "enum": [null, "discovery", "design", "build", "deploy", "bug"]
+            "enum": [null, "discovery", "design", "build", "deploy", "bug", "onboard"]
           },
           "blocked_reason": { "type": ["string", "null"] }
         }

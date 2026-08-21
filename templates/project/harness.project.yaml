@@ -8,6 +8,28 @@ project:
   name: "{{PROJECT_NAME}}"
   created_at: "{{CREATED_AT}}"
 
+# Repositorios que componen el producto (Onboard / Design los leen).
+# El repo donde vive este archivo es el "home" (memoria + orquesta).
+# Lista paths absolutos o relativos a este home, y/o URLs remotas.
+repositories:
+  strategy: mono # mono | multi | hybrid
+  home: .
+  repos: []
+  # Ejemplo multi-repo:
+  # repos:
+  #   - id: web
+  #     path: .
+  #     role: app
+  #     url: null
+  #   - id: api
+  #     path: ../mi-api
+  #     role: api
+  #     url: https://github.com/org/mi-api
+  #   - id: workers
+  #     path: /Users/yo/Projects/mi-workers
+  #     role: other
+  #     url: null
+
 # Memoria de este proyecto (resultado de procesos — no del kit)
 memory:
   root: memory

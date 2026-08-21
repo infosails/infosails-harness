@@ -1,0 +1,34 @@
+# Manifest del runtime empaquetado por ./scripts/pack
+# Solo lo necesario para instalar el kit e iniciar proyectos (infosails-init).
+
+kind: infosails-harness-pack
+version: 1
+
+include:
+  - config/harness.yaml
+  - config/pack.manifest
+  - skills/                # copia de .cursor/skills del kit
+  - templates/             # sin .cursor/; rules en project/cursor-rules/
+  - schemas/
+  - scripts/install
+  - scripts/init-project
+  - README.md              # generado (runtime)
+  - AGENTS.md              # generado (runtime)
+  - config/runtime.json
+
+exclude:
+  - playground/
+  - scripts/playground
+  - phases/                # docs del kit; no los usa init
+  - .cursor/               # en el pack las skills van en skills/
+  - .git/
+  - dist/
+  - agent-transcripts/
+  - README.md              # README largo del repo kit (se reemplaza)
+  - AGENTS.md              # se reemplaza por versión runtime
+
+notes: |
+  El playground es solo para probar el harness dentro del repo del kit.
+  Un proyecto real usa el runtime: install → infosails-init → memory en el proyecto.
+  En el pack, las skills viven en skills/ (no .cursor/) para un layout portable;
+  init-project acepta HARNESS_HOME/skills o HARNESS_HOME/.cursor/skills.
