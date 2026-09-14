@@ -13,7 +13,14 @@ VERSION="${VERSION#\"}"
 
 mkdir -p "$BIN_DIR"
 ln -sfn "$HARNESS_HOME/scripts/init-project" "$BIN_DIR/infosails-init"
-chmod +x "$HARNESS_HOME/scripts/init-project" "$BIN_DIR/infosails-init"
+ln -sfn "$HARNESS_HOME/scripts/update-project" "$BIN_DIR/infosails-update"
+chmod +x "$HARNESS_HOME/scripts/init-project" "$HARNESS_HOME/scripts/update-project" "$BIN_DIR/infosails-init" "$BIN_DIR/infosails-update"
+if [[ -f "$HARNESS_HOME/scripts/linear-import" ]]; then
+  ln -sfn "$HARNESS_HOME/scripts/linear-import" "$BIN_DIR/infosails-linear-import"
+  chmod +x "$HARNESS_HOME/scripts/linear-import"
+else
+  rm -f "$BIN_DIR/infosails-linear-import"
+fi
 
 SHELL_NAME="$(basename "${SHELL:-zsh}")"
 RC_FILE=""
@@ -72,6 +79,7 @@ Instalación del kit OK.
   Versión:                 $VERSION
   INFOSAILS_HARNESS_HOME=$HARNESS_HOME
   Comando:                 infosails-init
+  Actualizar proyecto:     infosails-update
   Symlink:                 $BIN_DIR/infosails-init → $HARNESS_HOME/scripts/init-project
 
 Recarga la shell (importante si actualizás de versión):
@@ -83,6 +91,7 @@ Luego crea o adopta un proyecto:
 
   infosails-init mi-app --path ~/Projects/mi-app
   infosails-init . --into ~/Projects/app-existente
+  infosails-update --path ~/Projects/mi-app
 
 La memoria (historias) quedará en el repo del proyecto, no en el kit.
 

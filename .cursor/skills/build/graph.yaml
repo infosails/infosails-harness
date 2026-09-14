@@ -1,0 +1,62 @@
+# Template DAG — Build.
+# planner DEBE instanciar tdd-dev:<WP-id> y rewirear a coverage-gate
+# (quita planner → coverage-gate). Ver _shared/graph.md.
+
+process: build
+nodes:
+  - id: surveyor
+    role: surveyor
+    kind: serial
+    writes: []
+  - id: planner
+    role: planner
+    kind: serial
+    writes: []
+  - id: coverage-gate
+    role: coverage-gate
+    kind: gate
+    writes: []
+  - id: complexity-gate
+    role: complexity-gate
+    kind: parallel
+    writes: []
+  - id: sast
+    role: sast
+    kind: parallel
+    writes: []
+  - id: mutation
+    role: mutation
+    kind: parallel
+    writes: []
+  - id: e2e
+    role: e2e
+    kind: parallel
+    optional: true
+    writes: []
+  - id: integrator
+    role: integrator
+    kind: gate
+    writes: []
+  - id: critic
+    role: critic
+    kind: gate
+    writes: []
+  - id: scribe
+    role: scribe
+    kind: serial
+    writes:
+      - memory/builds/
+      - memory/backlog.json
+edges:
+  - { from: surveyor, to: planner }
+  - { from: planner, to: coverage-gate }
+  - { from: coverage-gate, to: sast }
+  - { from: coverage-gate, to: mutation }
+  - { from: coverage-gate, to: e2e }
+  - { from: coverage-gate, to: complexity-gate }
+  - { from: sast, to: integrator }
+  - { from: mutation, to: integrator }
+  - { from: e2e, to: integrator }
+  - { from: complexity-gate, to: integrator }
+  - { from: integrator, to: critic }
+  - { from: critic, to: scribe }

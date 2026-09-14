@@ -1,14 +1,17 @@
 # Fase: Deploy
 
-**Status:** planned  
-**Agente:** Deploy Agent (pendiente)  
-**Input:** artefactos de Build  
-**Output:** `releases/` (pendiente)
+**Status:** active  
+**Lead:** Deploy Lead  
+**Skill:** `.cursor/skills/deploy/SKILL.md`  
+**Input:** `memory/builds/` + repos de producto + home  
+**Output:** `main` pusheada (producto + home) + Vercel prod + `memory/deploys/` (Deploy Report)
 
-## Objetivo (previsto)
+## Contrato
 
-Publicar, verificar y documentar el despliegue del trabajo construido por agentes.
+Commit y push a **`main`**, después **`vercel --prod`** en apps Vercel. El home versiona `memory/`.
 
-## Estado actual
+## Agentes internos
 
-Placeholder.
+`surveyor` → `[committer producto ∥]` → `gate` git → `[publisher ∥]` → `gate` vercel → `scribe` → `committer` home → `gate` home
+
+Git: `.cursor/skills/deploy/git.md`. Vercel: `.cursor/skills/deploy/vercel.md`.

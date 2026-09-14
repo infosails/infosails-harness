@@ -36,11 +36,34 @@ memory:
   backlog: memory/backlog.json
   blueprints: memory/blueprints
   bugs: memory/bugs
+  trackers: memory/trackers
+  costs: memory/costs
   director_state: memory/director-state.json
   rule: |
     Si no está en memory/, no cuenta como trabajo de este proyecto.
     El chat no es memoria.
-    Solo el Director edita director-state.json (estado de procesos y handoffs).
+    Linear (si está enabled) es proyección del tablero, no fuente de verdad.
+    Solo el Director edita director-state.json (estado de procesos y handoffs)
+    y memory/trackers/ (índice de proyección).
+    memory/costs/ lo escribe el hook de Cursor (tokens por turno).
+    memory/lessons/ lo escribe el Lead que bloquea por calidad aguas arriba.
+
+# Tokens (opt-in). USD es estimación si hay tarifas en memory/costs/rates.json.
+costs:
+  enabled: true
+
+# Tracker de equipo (opt-in). No sustituye memory/.
+# enabled: false → el harness se comporta como siempre.
+# intake_label: issues con esta etiqueta pueden entrar al menú de la Orquesta.
+trackers:
+  linear:
+    enabled: false
+    team_id: null
+    team_key: null
+    project_id: null
+    project_name: null
+    intake_label: "Ready for Discovery"
+    write_on_complete: true
 
 orchestrator:
   agent: director

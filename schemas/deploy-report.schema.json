@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://infosails.dev/schemas/deploy-report.schema.json",
+  "title": "Deploy Report",
+  "type": "object",
+  "required": [
+    "id",
+    "title",
+    "status",
+    "created_by",
+    "markdown_path",
+    "created_at",
+    "phase",
+    "target_branch"
+  ],
+  "properties": {
+    "id": { "type": "string", "pattern": "^DR-[0-9]{8}-[0-9]{3}$" },
+    "title": { "type": "string" },
+    "build_report_id": { "type": ["string", "null"] },
+    "design_package_id": { "type": ["string", "null"] },
+    "blueprint_id": { "type": ["string", "null"] },
+    "bug_id": { "type": ["string", "null"] },
+    "status": {
+      "type": "string",
+      "enum": ["Live", "On main", "Blocked", "In Progress"]
+    },
+    "created_by": { "type": "string" },
+    "phase": { "type": "string", "const": "deploy" },
+    "target_branch": { "type": "string", "const": "main" },
+    "repos": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "role": { "type": "string", "enum": ["product", "home"] },
+          "path": { "type": "string" },
+          "sha": { "type": "string" },
+          "pushed": { "type": "boolean" },
+          "new_commit": { "type": "boolean" },
+          "skipped_reason": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "vercel": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "path": { "type": "string" },
+          "url": { "type": ["string", "null"] },
+          "published": { "type": "boolean" },
+          "skipped_reason": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "agent_published": {
+      "type": "boolean"
+    },
+    "markdown_path": { "type": "string" },
+    "created_at": { "type": "string" },
+    "updated_at": { "type": "string" }
+  }
+}

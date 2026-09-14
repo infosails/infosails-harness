@@ -6,16 +6,23 @@
   "status": "idle",
   "current_agent": null,
   "agents": {
-    "triager": {
-      "role": "Clarificar síntoma, repro, esperado/actual y severidad",
-      "status": "idle",
-      "note": null
-    },
-    "scribe": {
-      "role": "Materializar el bug brief en memory/bugs/ tras confirmación",
-      "status": "idle",
-      "note": null
-    }
+    "triager": { "role": "Clarificar síntoma, repro, esperado/actual y severidad", "status": "idle", "note": null },
+    "repro-scout": { "role": "Contexto en repo / tests relacionados", "status": "idle", "note": null },
+    "critic": { "role": "Checklist del Bug Brief (antes de scribe)", "status": "idle", "note": null },
+    "scribe": { "role": "Materializar el bug brief en memory/bugs/ tras confirmación", "status": "idle", "note": null }
+  },
+  "graph": {
+    "nodes": [
+      { "id": "triager", "role": "triager", "kind": "human", "status": "idle", "writes": [] },
+      { "id": "repro-scout", "role": "repro-scout", "kind": "parallel", "optional": true, "status": "idle", "writes": [] },
+      { "id": "critic", "role": "critic", "kind": "gate", "status": "idle", "writes": [] },
+      { "id": "scribe", "role": "scribe", "kind": "serial", "status": "idle", "writes": ["memory/bugs/", "memory/backlog.json"] }
+    ],
+    "edges": [
+      { "from": "triager", "to": "critic" },
+      { "from": "repro-scout", "to": "critic" },
+      { "from": "critic", "to": "scribe" }
+    ]
   },
   "working": {
     "draft_title": null,

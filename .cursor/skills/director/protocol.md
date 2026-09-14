@@ -52,7 +52,7 @@ Archivo: `memory/processes/<proceso>/outbox-to-orchestra.json`
   "summary": "una frase para el humano/orquesta",
   "progress_pct": 0,
   "artifact": {
-    "type": "blueprint | bug | onboard | null",
+    "type": "blueprint | bug | onboard | design | build_report | deploy_report | null",
     "id": null,
     "path": null
   },
@@ -79,6 +79,11 @@ La Orquesta **tiene prohibido**:
 - Activar agentes internos
 - Editar `state.json` del proceso
 
+Si Linear está enabled, la Orquesta también edita `memory/trackers/` y sincroniza `backlog.json` (proyección). Los Leads no llaman a Linear.
+
+`memory/costs/` lo escribe el hook de Cursor (`stop`); la Orquesta solo lee.  
+`memory/lessons/` lo escriben los Leads (calidad); la Orquesta no lo lee ni lo edita.
+
 ## Cadena de mando
 
 1. Usuario ↔ Orquesta  
@@ -90,7 +95,11 @@ El Lead agrega y reporta hacia arriba.
 
 ## Subagentes (Leads)
 
-Todo Lead **puede lanzar** sus agentes expertos como **subagentes** (Task) y **en paralelo** si son independientes.
-Guía común: [../_shared/lead-subagents.md](../_shared/lead-subagents.md).
+Todo Lead **ejecuta el frontier** de su grafo (`state.graph` / `graph.yaml`): subagentes en paralelo cuando hay varios nodos ready.
+Guía: [../_shared/lead-subagents.md](../_shared/lead-subagents.md) · [../_shared/graph.md](../_shared/graph.md).
 
 La Orquesta **no** lista, lanza ni espera subagentes: solo lee el outbox del Lead.
+
+Tras `complete`, la Orquesta registra el artefacto con `derived_from`: el `focus.artifact_id` previo si es distinto del nuevo id (BP→DS→BR→DR).
+
+`memory/lessons/` lo escriben los Leads cuando bloquean por calidad aguas arriba. La Orquesta no lo edita.

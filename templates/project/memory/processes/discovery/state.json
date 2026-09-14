@@ -6,16 +6,26 @@
   "status": "idle",
   "current_agent": null,
   "agents": {
-    "interviewer": {
-      "role": "Conversar y clarificar problema, core, guardrails y aceptación",
-      "status": "idle",
-      "note": null
-    },
-    "scribe": {
-      "role": "Materializar el blueprint en memory/blueprints/ tras confirmación",
-      "status": "idle",
-      "note": null
-    }
+    "interviewer": { "role": "Conversar y clarificar problema, core, guardrails y aceptación", "status": "idle", "note": null },
+    "user-scout": { "role": "Roles/perfiles en BPs y landscape previos", "status": "idle", "note": null },
+    "inventory-scout": { "role": "Solapes en blueprints/código/landscape", "status": "idle", "note": null },
+    "critic": { "role": "Checklist de cierre del blueprint (antes de scribe)", "status": "idle", "note": null },
+    "scribe": { "role": "Materializar el blueprint en memory/blueprints/ tras confirmación", "status": "idle", "note": null }
+  },
+  "graph": {
+    "nodes": [
+      { "id": "interviewer", "role": "interviewer", "kind": "human", "status": "idle", "writes": [] },
+      { "id": "user-scout", "role": "user-scout", "kind": "parallel", "optional": true, "status": "idle", "writes": [] },
+      { "id": "inventory-scout", "role": "inventory-scout", "kind": "parallel", "optional": true, "status": "idle", "writes": [] },
+      { "id": "critic", "role": "critic", "kind": "gate", "status": "idle", "writes": [] },
+      { "id": "scribe", "role": "scribe", "kind": "serial", "status": "idle", "writes": ["memory/blueprints/", "memory/backlog.json"] }
+    ],
+    "edges": [
+      { "from": "interviewer", "to": "critic" },
+      { "from": "user-scout", "to": "critic" },
+      { "from": "inventory-scout", "to": "critic" },
+      { "from": "critic", "to": "scribe" }
+    ]
   },
   "working": {
     "draft_title": null,

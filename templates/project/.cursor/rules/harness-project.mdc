@@ -7,7 +7,7 @@ alwaysApply: true
 
 Usuario ↔ **Orquesta** ↔ **Lead** ↔ agentes internos (**subagentes** en paralelo si son independientes).
 
-Guía: `.cursor/skills/_shared/lead-subagents.md`
+Guía: `.cursor/skills/_shared/lead-subagents.md` (grafo de ejecución; frontier en paralelo).
 
 ## Memoria clave
 
@@ -16,5 +16,8 @@ Guía: `.cursor/skills/_shared/lead-subagents.md`
 - Diseño por historia: `memory/designs/`
 - Seed brownfield: `memory/onboard/`
 - Estado orquesta: `memory/director-state.json`
+- Tracker (opt-in): `memory/trackers/` — Linear es proyección, no fuente de verdad
+- Costos: `memory/costs/` — tokens por historia (hook; no editar a mano)
+- Lecciones: `memory/lessons/` — huecos de calidad entre procesos (escribe el Lead que bloquea)
 
-Design Lead lee landscape/ADRs/infra antes de proponer; Build Lead implementa con TDD, cov≥85%, mutación y e2e; consume Design Packages. Onboard Lead hidrata landscape + BPs Done desde un repo ya iniciado.
+Design Lead lee landscape/ADRs/infra antes de proponer; Build Lead implementa con TDD, cov≥85%, CCN≤10, mutación y e2e; consume Design Packages. Deploy Lead pushea `main` y corre `vercel --prod`. Onboard Lead hidrata landscape + BPs Done desde un repo ya iniciado.

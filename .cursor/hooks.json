@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "hooks": {
+    "stop": [
+      {
+        "command": "scripts/record-usage"
+      }
+    ],
+    "subagentStop": [
+      {
+        "command": "scripts/record-usage"
+      }
+    ]
+  }
+}

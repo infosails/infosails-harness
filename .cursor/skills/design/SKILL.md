@@ -22,7 +22,9 @@ Para UI, activas al agente **`ui-designer`**, que usa el design system oficial
 - UI: [ui-designer.md](ui-designer.md) — **`@infosails/design-system`** + `csf.md`
 - Salida: `memory/designs/`
 - Roster: [agents.md](agents.md)
+- Grafo: [graph.yaml](graph.yaml) · [../_shared/graph.md](../_shared/graph.md)
 - Subagentes: [../_shared/lead-subagents.md](../_shared/lead-subagents.md)
+- Crítico / lecciones: [../_shared/critic.md](../_shared/critic.md) · [../_shared/lessons.md](../_shared/lessons.md)
 
 **PROJECT_ROOT:** `harness.project.yaml` o `playground/`.
 
@@ -33,16 +35,17 @@ Para UI, activas al agente **`ui-designer`**, que usa el design system oficial
 
 ## Agentes
 
-| Orden | Agente | Qué hace | Paralelo |
-|-------|--------|----------|----------|
-| 1 | `surveyor` | Landscape, as-built, **infra**, ADRs, BP | no (primero) |
-| 2 | `architect` | Diseño app + infra + repos + **diagramas Mermaid** (secuencia/componentes) | **sí** con ui-designer tras surveyor |
-| 3 | `ui-designer` | Pantallas + perfiles BP + sabores DS (`csf.md`) | **sí** con architect si el BP ya define UI |
-| 4 | `scribe` | DS + landscape/as-built/infra/**repos**/ADRs; **crear repos** si aplica | no (final) |
+| Orden | Agente | Qué hace | kind |
+|-------|--------|----------|------|
+| 1 | `surveyor` | Landscape, as-built, **infra**, ADRs, BP, lecciones | serial |
+| 2 | `architect` | Diseño app + infra + repos + **diagramas Mermaid** | parallel |
+| 3 | `ui-designer` | Pantallas + perfiles BP + sabores DS (`csf.md`) | parallel (optional) |
+| 4 | `critic` | Hexagonal / BP / paths / UI mapa | gate |
+| 5 | `scribe` | DS + landscape/as-built/infra/**repos**/ADRs; **crear repos** si aplica | serial |
 
-Orquestación: [lead-subagents.md](../_shared/lead-subagents.md).  
-Tras `surveyor`, lanzar **`architect` ∥ `ui-designer`** como subagentes cuando el BP tenga pantallas; si no hay UI, skip `ui-designer`.  
-El Lead sintetiza, confirma con el usuario y recién ahí `scribe`. Fallback: encarnar roles en serie.
+Orquestación: frontier ([lead-subagents.md](../_shared/lead-subagents.md)).  
+Tras `surveyor`: **`architect` ∥ `ui-designer`**. Sin UI: `ui-designer` `skipped`.  
+BP sin perfiles/tipo de app → `blocked` + lección a Discovery. Confirmación humana del Lead; `critic` `done` antes de `scribe`.
 
 ## Surveyor
 
@@ -51,11 +54,12 @@ Leer:
 1. Landscape (módulos, as-built, **repos**, **§ Infraestructura**)
 2. ADRs Accepted
 3. Blueprint (existencia + **usuarios** + **tipo de app** + **§ integraciones exteriores** + core)
-4. Designs previos
-5. Código / repos existentes solo para contrastar
+4. `memory/lessons/` con `to_process: design` (y el BP en focus)
+5. Designs previos
+6. Código / repos existentes solo para contrastar
 
 Si el BP declara proveedor exterior: respetar la **matriz de tipos** (no inventar webhooks/SDK/embed no marcados SÍ).  
-Si faltan perfiles de usuario o tipo de aplicación → pedir completar Discovery o `blocked` (Design/UI no inventan audiencia).
+Si faltan perfiles de usuario o tipo de aplicación → pedir completar Discovery o `blocked` + lección `to_process: discovery` (Design/UI no inventan audiencia).
 
 Sobre **repositorios**, anotar:
 - Qué repos ya existen (tabla del landscape)
@@ -155,6 +159,10 @@ Resumen:
 7. Incluir en el plan de Build: `.npmrc`, install, imports CSS, `transpilePackages` (Next) si aplica.
 8. Otra librería UI → solo con ADR Accepted.
 
+## critic
+
+[critic.md](../_shared/critic.md) § Design. Fail de BP → `blocked` + lección a Discovery. Sin `done` no hay `scribe`.
+
 ## Scribe
 
 ### A. Design Package
@@ -196,5 +204,6 @@ Tras confirmación del usuario:
 - Solo nubes **Vercel** y **GCP** (otra nube = ADR de excepción).
 - UI de producto: solo **`@infosails/design-system`** (otra kit = ADR de excepción).
 - Blueprint vago → Discovery; infra crítica indefinida → preguntar o `blocked_infra`.
+- No `complete` si `critic` no está `done`.
 - No `complete` con UI sin mapa al design system **ni sin matriz de sabores/características** (cuando hay pantallas) o sin skip justificado.
 - No `complete` sin diagramas Mermaid de componentes/secuencia cuando la historia cambia topología o flujos (ver [diagrams.md](diagrams.md)).

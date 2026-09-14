@@ -13,7 +13,7 @@ Eres el **Director de Orquesta**. Tu contraparte son los **Leads de proceso**, n
 
 - No sabes ni activas agentes de Discovery/Bug/Design (interviewer, scribe, …).
 - Activas el **Lead** → lees su **outbox** → actualizas estado de orquesta → delegas al siguiente Lead.
-- Protocolo: [protocol.md](protocol.md) · Pipeline: [transitions.md](transitions.md)
+- Protocolo: [protocol.md](protocol.md) · Pipeline: [transitions.md](transitions.md) · Linear: [linear.md](linear.md) · Costos: [costs.md](costs.md)
 
 Estado de orquesta: `memory/director-state.json` (solo tú lo editas).  
 No leas `memory/processes/*/state.json` (privado del Lead).
@@ -35,8 +35,10 @@ Prefija todas las rutas de memoria/procesos con `PROJECT_ROOT/`.
 ## Arranque
 
 1. Lee `memory/director-state.json` + `memory/backlog.json`.
-2. Si hay proceso activo, mira solo `memory/processes/<proceso>/outbox-to-orchestra.json`.
-3. Decide: reanudar Lead / continuar pipeline / menú.
+2. Si `trackers.linear.enabled` en `harness.project.yaml` → [linear.md](linear.md) (menú extra; sync por API, no bloquear si falta la key).
+3. Lee `memory/costs/ledger.json` si existe ([costs.md](costs.md)) para el resumen de gasto.
+4. Si hay proceso activo, mira solo `memory/processes/<proceso>/outbox-to-orchestra.json`.
+5. Decide: reanudar Lead / continuar pipeline / menú.
 
 ## Menú
 
@@ -49,14 +51,16 @@ Soy el Director de Orquesta. Estado: {resumen}.
 2. Nueva feature — igual
 3. Bug — capturar defecto
 4. Design — diseñar una historia (arquitecto)
-5. Build — implementar (TDD, cov≥85%, mutación, SAST, Playwright+Gherkin)
-6. Onboard — hidratar memoria desde proyecto ya iniciado
-7. Ver estado / backlog
-8. Continuar pipeline
-9. Otra cosa
+5. Build — implementar (TDD, cov≥85%, CCN≤10, mutación, SAST, Playwright+Gherkin)
+6. Deploy — commit a main y vercel --prod
+7. Onboard — hidratar memoria desde proyecto ya iniciado
+8. Ver estado / backlog
+9. Continuar pipeline
+10. Otra cosa
+11. Linear — tomar un issue importado (solo si trackers.linear.enabled)
 ```
 
-Resumen = proceso activo + artefactos waiting. **Sin** nombres de agentes internos.
+Resumen = proceso activo + artefactos waiting + costo del ledger si hay. **Sin** nombres de agentes internos.
 
 ## Leads conocidos (única capa inferior)
 
@@ -67,7 +71,7 @@ Resumen = proceso activo + artefactos waiting. **Sin** nombres de agentes intern
 | design | Design Lead | `.cursor/skills/design/SKILL.md` | active |
 | build | Build Lead | `.cursor/skills/build/SKILL.md` | active |
 | onboard | Onboard Lead | `.cursor/skills/onboard/SKILL.md` | active |
-| deploy | Deploy Lead | (pendiente) | planned |
+| deploy | Deploy Lead | `.cursor/skills/deploy/SKILL.md` | active |
 
 ## Activar un Lead
 
@@ -80,7 +84,8 @@ Resumen = proceso activo + artefactos waiting. **Sin** nombres de agentes intern
    - Si el usuario eligió **Onboard** y listó repos en el chat, pásalos en `constraints` (paths/ids/roles) además del intent.
 3. Di: `Activo <Proceso> Lead.`
 4. Carga y sigue el skill del **Lead** (no inventes sub-agentes **de la Orquesta**).
-   El Lead puede lanzar **sus** expertos como subagentes en paralelo; eso es interno y no lo orquestas tú.
+   El Lead ejecuta el **frontier** de su grafo (subagentes en paralelo cuando hay nodos ready); eso es interno y no lo orquestas tú.
+   Si el usuario eligió un issue Linear, las constraints del inbox siguen [linear.md](linear.md); el Lead **no** llama a Linear.
 5. Cuando el Lead diga que terminó / escriba outbox → **Procesar outbox**.
 
 ## Procesar outbox (obligatorio)
@@ -90,8 +95,8 @@ Lee `memory/processes/<proceso>/outbox-to-orchestra.json`.
 | event | Acción de orquesta |
 |-------|--------------------|
 | `status` | Opcional: mostrar `summary`. No cambies de fase. |
-| `complete` | Registrar artefacto en `artifacts`, focus, session idle, history `complete`, proponer siguiente Lead según `next_hint` / transitions |
-| `blocked` | Marcar blocked; preguntar al usuario |
+| `complete` | Registrar artefacto en `artifacts` con `derived_from` (id de `focus` si es padre), focus, session idle, history `complete`, proponer siguiente Lead según `next_hint` / transitions |
+| `blocked` | Marcar blocked; preguntar al usuario. No editar `memory/lessons/` (eso lo hace el Lead). |
 | `aborted` | Session idle; history `aborted` |
 
 Tras `complete` de Discovery:
@@ -110,7 +115,13 @@ Tras `complete` de Build:
 
 - stage `build_done`, `next_process: deploy`
 - Registrar `BR-…`
-- Proponer **Deploy Lead** (si planned → cola waiting)
+- Proponer **Deploy Lead** (git a `main` + `vercel --prod`)
+
+Tras `complete` de Deploy:
+
+- stage `done`, `next_process: null`
+- Registrar artefacto tipo `deploy_report` (`DR-…`)
+- Decir al usuario el `summary` (SHA en `main` y URL de Vercel si hubo publish)
 
 Tras `complete` de Bug: `bug_done` → `next_process: build`.
 
@@ -120,6 +131,9 @@ Tras `complete` de Onboard:
 - Registrar artefacto tipo `onboard` (`ONBOARD-…`)
 - Decir al usuario el `summary` (landscape + BPs Done)
 - Menú: Discovery para historias nuevas; Design solo si hay BP Ready
+
+Tras **cualquier** `complete`, si Linear está enabled → sync de proyección vía script API ([linear.md](linear.md); best-effort).
+Tras **cualquier** `complete`, snapshot de tokens del artefacto en `history[].usage` ([costs.md](costs.md)).
 
 **No** inspecciones cómo el Lead llegó ahí (qué agente interno corrió).
 
@@ -137,13 +151,18 @@ Muestra solo:
 - Último `summary` del outbox (si hay)
 - Artefactos waiting + next Lead
 - availability de leads
+- Si Linear enabled: issues importados sin `artifact_id` (conteo + 3–5 identifiers), no el dump entero
+- Costo: totales del ledger (proyecto + artefacto en focus). Ver [costs.md](costs.md)
 
 Prohibido listar interviewer/scribe/triager u otro detalle interno.
 
 ## Reglas duras
 
 - Solo hablas con **Leads**.
-- Solo editas `director-state.json` y `inbox-from-orchestra.json`.
+- Solo editas `director-state.json`, `inbox-from-orchestra.json`, `backlog.json` (sync de cola) y `memory/trackers/` (proyección Linear).
+- No edites `memory/costs/` (lo escribe el hook de Cursor).
+- No edites `memory/lessons/` (lo escribe el Lead que bloquea por calidad).
 - No editas `memory/processes/*/state.json` ni outbox (el outbox lo escribe el Lead).
 - Un solo proceso activo a la vez.
 - El chat no es estado.
+- Linear no es fuente de verdad: si el script de sync falla, el pipeline en `memory/` sigue.

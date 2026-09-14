@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "hooks": {
+    "stop": [
+      {
+        "command": ".cursor/hooks/record-usage.py"
+      }
+    ],
+    "subagentStop": [
+      {
+        "command": ".cursor/hooks/record-usage.py"
+      }
+    ]
+  }
+}

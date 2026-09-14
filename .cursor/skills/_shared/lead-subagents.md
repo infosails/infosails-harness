@@ -1,11 +1,13 @@
 # Subagentes de Lead (todos los procesos)
 
-Aplica a **Discovery Lead**, **Bug Lead**, **Design Lead**, **Build Lead** (y futuros Leads).
+Aplica a **Discovery Lead**, **Bug Lead**, **Design Lead**, **Build Lead**, **Onboard Lead**, **Deploy Lead** (y futuros Leads).
 
 Los agentes expertos del roster **no** son solo roles que el Lead “encarna” en serie.  
-El Lead **puede y debe** lanzarlos como **subagentes** (Task / subagent de Cursor) y **en paralelo** cuando no haya dependencia ni conflicto de escritura.
+El Lead los lanza como **subagentes** (Task / subagent de Cursor) según el **grafo de ejecución**.
 
 La Orquesta **no** ve ni activa subagentes. Solo el Lead.
+
+Grafo: [graph.md](graph.md) · Crítico: [critic.md](critic.md) · Lecciones: [lessons.md](lessons.md).
 
 ## Modelo
 
@@ -13,98 +15,114 @@ La Orquesta **no** ve ni activa subagentes. Solo el Lead.
 Orquesta
    ↕  inbox / outbox
 Lead del proceso
-   ↕  Task / subagent (1..N en paralelo)
-Agentes expertos (roster del proceso)
+   ↕  graph.frontier → Task / subagent (0..N en paralelo)  o  encarnar (human)
+Agentes expertos (nodos instanciados del roster)
 ```
 
 | Quién | Qué hace |
 |-------|----------|
-| Lead | Planifica, lanza subagentes, sintetiza, actualiza `state.agents.*`, habla con el usuario, escribe outbox |
-| Subagente | Ejecuta **un** rol del roster con prompt acotado; devuelve resultado al Lead |
+| Lead | Lee lecciones, calcula frontier, lanza subagentes, sintetiza, sincroniza `graph` + `agents.*`, habla con el usuario, escribe outbox |
+| Subagente | Ejecuta **un** nodo (`id` + `role`) con prompt acotado a `writes[]`; devuelve resultado al Lead |
 | Orquesta | Solo Lead ↔ outbox; ignora internos |
 
-## Cuándo paralelo
+## Cada turno
 
-Lanza **varios** subagentes en el **mismo turno** si:
+1. `start`: si `graph` falta o `nodes` vacío → copiar `.cursor/skills/<proceso>/graph.yaml`.
+2. Leer `memory/lessons/` con `to_process` = este proceso ([lessons.md](lessons.md)).
+3. Opcionales innecesarios → `skipped`.
+4. Calcular **frontier** ([graph.md](graph.md)): predecesores `done`/`skipped`, sin colisión de `writes` con `running`.
+5. Lanzar **todos** los ready (`human` → Lead encarna, uno a la vez; resto → Task en el mismo mensaje). Marcar `running`.
+6. Al volver: **validar** el reporte. Solo entonces `done` / `blocked` / retry.
+7. Reconstruir `agents` desde `graph` ([graph.md](graph.md)). `current_agent`: `null` si hay más de un `running`.
+8. `progress_pct` = `(done + skipped) / nodes`.
+9. `complete` **solo** si `critic` está `done` y `scribe` (si aplica) está `done`.
+10. Solo el Lead escribe `outbox-to-orchestra.json`.
 
-1. No dependen del output del otro, **o**
-2. El grafo del plan marca `parallel: true`, **y**
-3. No escriben el mismo archivo / mismo artefacto a la vez.
+**Fallback:** sin herramienta de subagente, el Lead encarna el frontier **en serie** (mismo grafo, un nodo por vez).
 
-Ejemplos:
+## Contrato del subagente
 
-| Proceso | Paralelo típico |
-|---------|-----------------|
-| Discovery | Investigación de usuarios + tipo de app; scouts de inventario ∥ preparación; **no** dos interviewers con el usuario a la vez |
-| Bug | Recolección de contexto en repo ∥ borrador de guardrails si el síntoma ya está claro |
-| Design | Tras surveyor: `architect` ∥ `ui-designer` (si el BP ya define pantallas) |
-| Build | Varios `tdd-dev` (WPs); luego `sast` ∥ `mutation` ∥ `e2e` |
+El Task **no** se memoriza en `memory/`. Se endurece aquí. Schema: `schemas/subagent-report.schema.json`.
 
-## Cuándo serie / encarnar
-
-- Conversación con el usuario (interviewer, triager, confirmaciones).
-- Gates que necesitan el resultado anterior (coverage tras todos los WPs; scribe al final).
-- Un solo escritor canónico del artefacto final (`scribe`).
-
-**Fallback:** si no hay herramienta de subagente disponible, el Lead **encarna** el rol en serie — mismo contrato de estado y outbox.
-
-## Cómo lanzar un subagente
-
-1. Marcar en `memory/processes/<proceso>/state.json`:
-   - `current_agent` / `agents.<id>.status` = `running`
-   - `note` breve (ej. “subagent WP-02”)
-2. Lanzar Task/subagent con prompt que incluya:
-   - **Rol exacto** del roster (`architect`, `ui-designer`, `tdd-dev`, …)
-   - Ruta al skill / doc del agente (`ui-designer.md`, `interview.md`, `standards.md`, …)
-   - `PROJECT_ROOT` y paths de memoria a leer
-   - **Entregable** concreto (qué devolver al Lead; qué archivos puede tocar)
-   - **Prohibiciones**: no editar `director-state.json`; no escribir outbox a Orquesta; no inventar fuera del brief
-3. Si hay N independientes → **N llamadas en paralelo** en el mismo mensaje.
-4. Al volver: sintetizar, marcar `done` | `blocked`, resolver conflictos, seguir el grafo.
-5. Solo el Lead escribe `outbox-to-orchestra.json`.
-
-### Plantilla de prompt (subagente)
+Sacar `Escribe solo` de `node.writes` (vacío → “devolver texto al Lead sin persistir”).
 
 ```text
-Eres el agente interno "<id>" del proceso <discovery|bug|design|build>.
+Eres el agente interno "<id>" (rol <role>) del proceso <discovery|bug|design|build|onboard|deploy>.
 Skill/guía: <path>
 PROJECT_ROOT: <path>
 Lee: <lista>
-Escribe solo: <lista o "devolver texto al Lead sin persistir">
+Escribe solo: <node.writes o "devolver texto al Lead sin persistir">
 Objetivo: <una frase>
 Criterio de done: <checklist corta>
-No hables con la Orquesta. No edites director-state.json.
-Al terminar: resume hallazgos + paths tocados + blockers.
+Al terminar devolvé JSON version=1 node_id role status summary
+  + paths_touched + blockers
+  + si role=tdd-dev: tdd.{test_files, prod_files, red_first, business_asserts}
+  + si role=critic: critic.{verdict, checklist, gap, upstream_process}
+No hables con la Orquesta. No edites director-state.json ni outbox.
+No relances otros nodos. No toques paths fuera de Escribe solo.
 ```
 
-## Estado
+### Validar (obligatorio)
 
-Actualizar siempre `state.agents.*` aunque el trabajo lo haga un subagente:
+1. Parsear el JSON (si viene envuelto en prosa, extraer el objeto).
+2. Campos required del schema. `paths_touched` ⊆ `node.writes` (si writes no vacío).
+3. `tdd-dev`: `tdd.test_files` no vacío y en el **diff** del WP ([critic.md](critic.md) § Por WP).
+4. `critic`: `critic.verdict` presente; `pass` exige todos los `ok: true`.
+
+Si el reporte es inválido o el Task falló: nodo → `idle`, **un** retry. Segundo fallo → `blocked` de ese nodo (pedir al usuario o encarnar). **No** crear `LSN-…`.
+
+`human`: el Lead no fabrica el JSON; aplica el mismo criterio de done del roster.
+
+## Cuándo paralelo / serie
+
+El grafo lo decide. No uses un flag `parallel: true` como plan: el paralelo es “más de un nodo en el frontier”.
+
+Excepciones fijas:
+
+- Un solo `human` a la vez (interviewer, triager, confirmaciones).
+- Un solo `scribe` del artefacto canónico.
+- `critic` antes de `complete` (y antes de `scribe`, salvo Deploy).
+
+Ejemplos (van en cada `graph.yaml`):
+
+| Proceso | Frontier típico |
+|---------|-----------------|
+| Discovery | `interviewer` (human) ∥ `user-scout` ∥ `inventory-scout` → `critic` → `scribe` |
+| Bug | `triager` (human) ∥ `repro-scout` → `critic` → `scribe` |
+| Design | `surveyor` → `architect` ∥ `ui-designer` → `critic` → `scribe` |
+| Build | `surveyor` → `planner` → `tdd-dev:*` (según `depends_on`/`writes`) → `coverage-gate` → `sast` ∥ `mutation` ∥ `e2e` ∥ `complexity-gate` → `integrator` → `critic` → `scribe` |
+| Onboard | `code-surveyor` ∥ `capability-scout` ∥ `docs-scout` → `synthesizer` → `critic` → `scribe` |
+| Deploy | `surveyor` → `committer:<repo>` ∥ … → `gate:git` → `publisher:<app>` ∥ … → `gate:vercel` → `critic` → `scribe` → `committer:home` → `gate:home` |
+
+## Estado de nodo / rol
 
 | status | Significado |
 |--------|-------------|
-| `idle` | No arrancado |
-| `running` | Subagente o Lead en ese rol |
+| `idle` | No arrancado; puede entrar al frontier |
+| `running` | Subagente o Lead en ese nodo |
 | `done` | Entregable aceptado por el Lead |
-| `blocked` | Falta input / secreto / decisión |
-| `skipped` | No aplica (ej. ui sin pantallas) |
-
-Varias instancias del mismo rol (ej. `tdd-dev`): usar `note` o claves `tdd-dev:WP-01` en `working`.
+| `blocked` | Falta input / secreto / decisión / calidad |
+| `skipped` | No aplica (ej. ui sin pantallas; scout no lanzado) |
 
 ## Reglas duras
 
-1. **Maximizar paralelismo** entre expertos independientes — no serializar por costumbre.
+1. Ejecutar el **frontier completo** — no serializar por costumbre.
 2. Subagentes **reportan al Lead**, nunca a la Orquesta.
-3. Un solo dueño del artefacto final por proceso (`scribe` del Lead).
-4. No dos writers en el mismo path sin coordinación.
-5. Confirmaciones humanas: las hace el **Lead** (o el agente conversacional), no N subagentes a la vez.
-6. Playground / kit: misma regla; documentar si un subagente no pudo correr.
+3. Un solo dueño del artefacto final (`scribe`).
+4. Colisión de `writes[]` → no están ready a la vez.
+5. Confirmaciones humanas: un `human`, no N subagentes.
+6. Nodo `done` no se relanza (resume / tokens).
+7. `agents` se **reconstruye** desde `graph`; si no calzan, gana el grafo.
+8. Fallo de Task / reporte inválido → retry del nodo, nunca `memory/lessons/`.
+9. Playground / kit: misma regla; documentar si un Task no pudo correr.
 
 ## Referencias por proceso
 
-| Lead | Roster |
-|------|--------|
-| Discovery | [discovery/agents.md](../discovery/agents.md) |
-| Bug | [bug/agents.md](../bug/agents.md) |
-| Design | [design/agents.md](../design/agents.md) |
-| Build | [build/agents.md](../build/agents.md) |
+| Lead | Roster | Grafo |
+|------|--------|-------|
+| Discovery | [discovery/agents.md](../discovery/agents.md) | [discovery/graph.yaml](../discovery/graph.yaml) |
+| Bug | [bug/agents.md](../bug/agents.md) | [bug/graph.yaml](../bug/graph.yaml) |
+| Design | [design/agents.md](../design/agents.md) | [design/graph.yaml](../design/graph.yaml) |
+| Build | [build/agents.md](../build/agents.md) | [build/graph.yaml](../build/graph.yaml) |
+| Onboard | [onboard/agents.md](../onboard/agents.md) | [onboard/graph.yaml](../onboard/graph.yaml) |
+| Deploy | [deploy/agents.md](../deploy/agents.md) | [deploy/graph.yaml](../deploy/graph.yaml) |

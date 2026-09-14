@@ -13,6 +13,10 @@ Orden por unidad de trabajo:
 
 Prohibido: implementar producción sin prueba roja previa en esa unidad.
 
+La memoria de TDD **no** es este skill. Es el test en el diff del WP (mismo cambio que el código) y los mutantes de negocio que mata. Coverage ≥85% no alcanza.
+
+Antes de marcar `tdd-dev:<WP>` `done`, el Lead corre el crítico de WP ([../_shared/critic.md](../_shared/critic.md)): `git diff` de `writes[]`, `test_files` no vacío, `business_asserts` del Gherkin/Core.
+
 SAST (análisis estático) **no** sustituye el Red de seguridad: el estático lo corre el agente `sast` tras cobertura; ver [sast.md](sast.md).
 
 ## Cobertura
@@ -25,11 +29,22 @@ SAST (análisis estático) **no** sustituye el Red de seguridad: el estático lo
 Si la suite del repo mide global: el diff/nuevo código de la historia debe cumplir ≥ 85%.  
 Gate rojo → no `complete`.
 
-## Mutación
+## Complejidad ciclomática
 
-- Ejecutar pruebas de **mutación** sobre el código de la historia (o paquete afectado).
-- Umbral por defecto: **mutation score ≥ 70%** en el scope de la historia (ajustar solo con ADR).
-- Si no hay runner de mutación en el stack: instalar/configurar uno razonable al stack (Stryker, mutmut, PITest, etc.) o `blocked` explicando el gap — no fingir mutación.
+Tras **coverage-gate**, en **paralelo** con sast, mutación y e2e:
+
+```text
+coverage-gate → [ sast ∥ mutation ∥ e2e ∥ complexity-gate ]
+```
+
+- Agente: `complexity-gate` — guía [complexity.md](complexity.md).
+- Default: **CCN McCabe ≤ 10** por función **nueva o tocada** (scope de la historia).
+- Funciones no tocadas no fallan el gate.
+- Tocar una función que ya estaba > 10 exige bajarla a ≤ 10 (partir / refactor), no empeorarla.
+- Default razonable de herramienta: **lizard** (u ESLint `complexity` / radon / gocyclo según stack).
+- Gate rojo → no `complete`. Listar ofensores en el Build Report.
+- Si no se puede correr → instalar o `blocked` — no fingir PASS.
+- Ajuste de umbral solo con ADR Accepted.
 
 ## Mutación
 
@@ -40,10 +55,10 @@ Gate rojo → no `complete`.
 
 ## SAST — análisis estático de seguridad
 
-Tras **coverage-gate**, en **paralelo** con mutación y e2e:
+Tras **coverage-gate**, en **paralelo** con mutación, e2e y complejidad:
 
 ```text
-coverage-gate → [ sast ∥ mutation ∥ e2e ]
+coverage-gate → [ sast ∥ mutation ∥ e2e ∥ complexity-gate ]
 ```
 
 - Agente: `sast` — guía [sast.md](sast.md).
@@ -54,9 +69,7 @@ coverage-gate → [ sast ∥ mutation ∥ e2e ]
 
 ## Paralelismo
 
-- El `planner` parte el Design Package en **work packages** independientes.
-- Maximizar paquetes sin dependencia; ejecutar en paralelo cuando el entorno lo permita (varios agentes / jobs).
-- Dependencias explícitas en el plan; no paralelizar lo acoplado.
+- El `planner` parte en WPs con `depends_on[]` y `writes[]`. El frontier lanza los que no se pisan.
 - Tests unitarios/integración en paralelo si el framework lo soporta.
 
 ## E2E — Playwright + Gherkin (obligatorio cuando hay UI/flujo)
@@ -123,6 +136,7 @@ Para poder construir y probar (Playwright + Gherkin) necesito:
 - [ ] Capacidad de probar e2e garantizada (Playwright listo + URL/datos) o skip Gherkin justificado
 - [ ] TDD seguido por work package (incl. tests de seguridad de comportamiento si aplica)
 - [ ] Cobertura ≥ 85% (scope historia)
+- [ ] Complejidad ciclomática: CCN ≤ 10 en funciones nuevas/tocadas
 - [ ] Mutación ejecutada y score ≥ umbral
 - [ ] SAST ejecutado sin hallazgos bloqueantes in-scope (o excepción documentada)
 - [ ] E2E Playwright ejecutado mapeando Gherkin, o skip justificado

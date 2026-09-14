@@ -15,7 +15,9 @@ La Orquesta **no** conoce ni habla con tus agentes.
 - Estado: `memory/processes/onboard/state.json`
 - Inbox / outbox: `memory/processes/onboard/`
 - Roster: [agents.md](agents.md)
+- Grafo: [graph.yaml](graph.yaml) · [../_shared/graph.md](../_shared/graph.md)
 - Subagentes: [../_shared/lead-subagents.md](../_shared/lead-subagents.md)
+- Crítico / lecciones: [../_shared/critic.md](../_shared/critic.md) · [../_shared/lessons.md](../_shared/lessons.md)
 
 **PROJECT_ROOT:** raíz con `harness.project.yaml`, o `playground/` si existe `playground/harness.project.yaml`.
 
@@ -34,7 +36,8 @@ Proyecto **ya iniciado** (código + docs) → generar **toda** la memoria que fa
 | `memory/onboard/ONBOARD-….md` | Informe de seed (qué se creó) |
 
 **No** inventar Design Packages ni Build Reports con gates falsos.  
-**No** inventar bugs ni historias Ready salvo huecos evidentes y confirmados (ver abajo).
+**No** inventar bugs ni historias Ready salvo huecos evidentes y confirmados (ver abajo).  
+**No** convertir issues de `memory/trackers/linear.json` en BPs Done: son cola de tablero, no as-built de código. Onboard no llama a Linear.
 
 ## Arranque
 
@@ -124,16 +127,17 @@ Tras resolver (YAML, inbox o respuesta a la pregunta):
 
 ## Agentes
 
-| Orden | Agente | Rol | Paralelo |
-|-------|--------|-----|----------|
-| 1 | `code-surveyor` | Stack, módulos, repos, infra, entrypoints | **sí** |
-| 1 | `capability-scout` | Capacidades / dominios / rutas / features detectables | **sí** |
-| 1 | `docs-scout` | README, ADRs previos, tickets, OpenAPI, etc. | **sí** |
-| 2 | `synthesizer` | Unifica hallazgos; propone landscape + lista de BPs | no |
-| 3 | `scribe` | Escribe todos los artefactos | no |
+| Orden | Agente | Rol | kind |
+|-------|--------|-----|------|
+| 1 | `code-surveyor` | Stack, módulos, repos, infra, entrypoints | parallel |
+| 1 | `capability-scout` | Capacidades / dominios / rutas / features detectables | parallel |
+| 1 | `docs-scout` | README, ADRs previos, tickets, OpenAPI, etc. | parallel |
+| 2 | `synthesizer` | Unifica hallazgos; propone landscape + lista de BPs | serial |
+| 3 | `critic` | No inventar DS/BR; evidencia de BPs Done | gate |
+| 4 | `scribe` | Escribe todos los artefactos | serial |
 
-Orquestación: [lead-subagents.md](../_shared/lead-subagents.md).  
-Lanzar los tres scouts **en paralelo**. Fallback: el Lead encarna el rol.
+Orquestación: frontier ([lead-subagents.md](../_shared/lead-subagents.md)).  
+Lanzar los tres scouts **en paralelo** (están ready juntos). `critic` `done` antes de `scribe`.
 
 **Prohibido** pedir entrevista larga de producto. Repos:
 
@@ -153,7 +157,7 @@ Sin payloads ofensivos; solo lectura de **cada repo** de la lista resuelta:
 - Tests/e2e como evidencia de comportamiento  
 - Ignorar: `node_modules/`, `dist/`, `.git/`, secrets, dumps
 
-El `code-surveyor` etiqueta hallazgos con `repo_id`. El `synthesizer` fusiona módulos/capacidades cross-repo.
+El `synthesizer` fusiona módulos/capacidades cross-repo. Tras el draft: `critic` ([critic.md](../_shared/critic.md)); recién ahí `scribe`.
 
 ## Reglas de materialización (`scribe`)
 

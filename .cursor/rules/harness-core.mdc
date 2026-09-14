@@ -16,7 +16,7 @@ alwaysApply: true
 
 ## Jerarquía
 
-Orquesta ↔ Lead ↔ agentes internos. Orquesta no activa agentes internos.
+Orquesta ↔ Lead ↔ agentes internos (grafo del Lead; Orquesta no lo ve).
 
 ## Kit
 

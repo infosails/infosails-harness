@@ -1,0 +1,45 @@
+# Template DAG — Deploy.
+# surveyor instancía committer:<repo_id> (producto) y publisher:<app_id>.
+# Ver _shared/graph.md. Home siempre después de scribe.
+
+process: deploy
+nodes:
+  - id: surveyor
+    role: surveyor
+    kind: serial
+    writes: []
+  - id: gate:git
+    role: gate
+    kind: gate
+    writes: []
+  - id: gate:vercel
+    role: gate
+    kind: gate
+    optional: true
+    writes: []
+  - id: critic
+    role: critic
+    kind: gate
+    writes: []
+  - id: scribe
+    role: scribe
+    kind: serial
+    writes:
+      - memory/deploys/
+      - memory/backlog.json
+  - id: committer:home
+    role: committer
+    kind: serial
+    writes:
+      - .
+  - id: gate:home
+    role: gate
+    kind: gate
+    writes: []
+edges:
+  - { from: surveyor, to: gate:git }
+  - { from: gate:git, to: gate:vercel }
+  - { from: gate:vercel, to: critic }
+  - { from: critic, to: scribe }
+  - { from: scribe, to: committer:home }
+  - { from: committer:home, to: gate:home }

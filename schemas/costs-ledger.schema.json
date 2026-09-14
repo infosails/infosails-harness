@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://infosails.dev/schemas/costs-ledger.schema.json",
+  "title": "Token cost ledger",
+  "description": "Totales de tokens (y USD estimado) por proyecto y artefacto. memory/costs/ledger.json",
+  "type": "object",
+  "required": ["version", "project", "by_artifact"],
+  "properties": {
+    "version": { "type": "integer", "const": 1 },
+    "updated_at": { "type": ["string", "null"] },
+    "currency": { "type": "string" },
+    "usd_is_estimate": { "type": "boolean" },
+    "project": { "$ref": "#/$defs/bucket" },
+    "unattributed": { "$ref": "#/$defs/bucket" },
+    "by_process": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/bucket" }
+    },
+    "by_artifact": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "type": { "type": ["string", "null"] },
+          "by_process": {
+            "type": "object",
+            "additionalProperties": { "$ref": "#/$defs/bucket" }
+          },
+          "totals": { "$ref": "#/$defs/bucket" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "bucket": {
+      "type": "object",
+      "properties": {
+        "input_tokens": { "type": "integer" },
+        "output_tokens": { "type": "integer" },
+        "cache_read_tokens": { "type": "integer" },
+        "cache_write_tokens": { "type": "integer" },
+        "turns": { "type": "integer" },
+        "usd_estimate": { "type": ["number", "null"] }
+      }
+    }
+  }
+}

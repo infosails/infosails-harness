@@ -12,6 +12,8 @@ include:
   - schemas/
   - scripts/install
   - scripts/init-project
+  - scripts/update-project
+  - scripts/record-usage
   - README.md              # generado (runtime)
   - AGENTS.md              # generado (runtime)
   - config/runtime.json

@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://infosails.dev/schemas/backlog.schema.json",
+  "title": "Project backlog",
+  "description": "Cola unificada del proyecto. Vive en memory/backlog.json.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "items"],
+  "properties": {
+    "version": { "type": "integer", "const": 1 },
+    "description": { "type": "string" },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "type", "title", "status"],
+        "properties": {
+          "id": { "type": "string" },
+          "type": {
+            "type": "string",
+            "enum": ["blueprint", "bug", "onboard", "linear_issue"]
+          },
+          "title": { "type": "string" },
+          "path": { "type": ["string", "null"] },
+          "status": {
+            "type": "string",
+            "enum": [
+              "imported",
+              "ready",
+              "in_progress",
+              "blocked",
+              "done",
+              "canceled"
+            ]
+          },
+          "next_hint": {
+            "type": ["string", "null"],
+            "enum": [null, "discovery", "design", "build", "deploy", "bug", "onboard"]
+          },
+          "note": { "type": ["string", "null"] },
+          "created_at": { "type": ["string", "null"] },
+          "updated_at": { "type": ["string", "null"] },
+          "linear": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "identifier": { "type": "string" },
+              "issueId": { "type": "string" },
+              "url": { "type": ["string", "null"] },
+              "project": { "type": ["string", "null"] }
+            }
+          }
+        }
+      }
+    }
+  }
+}

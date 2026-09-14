@@ -1,0 +1,35 @@
+# Template DAG — Design.
+# surveyor puede marcar ui-designer skipped si el BP no tiene UI.
+
+process: design
+nodes:
+  - id: surveyor
+    role: surveyor
+    kind: serial
+    writes: []
+  - id: architect
+    role: architect
+    kind: parallel
+    writes: []
+  - id: ui-designer
+    role: ui-designer
+    kind: parallel
+    optional: true
+    writes: []
+  - id: critic
+    role: critic
+    kind: gate
+    writes: []
+  - id: scribe
+    role: scribe
+    kind: serial
+    writes:
+      - memory/designs/
+      - memory/architecture/
+      - memory/backlog.json
+edges:
+  - { from: surveyor, to: architect }
+  - { from: surveyor, to: ui-designer }
+  - { from: architect, to: critic }
+  - { from: ui-designer, to: critic }
+  - { from: critic, to: scribe }

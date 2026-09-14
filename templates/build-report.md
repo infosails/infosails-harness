@@ -21,13 +21,16 @@
 * 
 
 ## 2. Work packages
-| ID | Descripción | Paralelo | Estado |
-|----|-------------|----------|--------|
-| WP-01 | | yes/no | done |
+| ID | Descripción | depends_on | writes | Estado |
+|----|-------------|------------|--------|--------|
+| WP-01 | | | | done |
 
-## 3. TDD
-* Red → Green → Refactor por WP: sí / no
-* Notas:
+## 3. TDD (memoria = test en el diff, no el % de cobertura)
+| WP | test_files (mismo diff) | red_first | business_asserts (Gherkin/Core) | Crítico WP |
+|----|-------------------------|-----------|----------------------------------|------------|
+| WP-01 | | sí/no | | pass / fail |
+
+* Mutación (más abajo) debe matar mutantes de esos asserts. Coverage solo no cierra esta sección.
 
 ## 4. Cobertura
 | Scope | Métrica | Resultado | Gate (≥85%) |
@@ -39,6 +42,22 @@ Comando(s):
 
 ```bash
 ```
+
+## 4b. Complejidad ciclomática
+| Scope | max CCN | Umbral | Gate |
+|-------|---------|--------|------|
+| Funciones nuevas/tocadas | | ≤10 | PASS / FAIL |
+
+Herramienta + comando:
+
+```bash
+```
+
+Ofensores (path, símbolo, CCN):
+
+| Path | Símbolo | CCN |
+|------|---------|-----|
+| | | |
 
 ## 5. Mutación
 | Scope | Score | Umbral | Gate |
@@ -88,6 +107,7 @@ Herramienta + comando:
 * [ ] Capacidad de probar (Playwright + URL/datos)
 * [ ] TDD (incl. seguridad de comportamiento si aplica)
 * [ ] Cobertura ≥ 85%
+* [ ] Complejidad ciclomática (CCN ≤ 10 nuevas/tocadas)
 * [ ] Mutación
 * [ ] SAST (sin bloqueantes in-scope)
 * [ ] E2E Playwright + Gherkin (o skip justificado)
@@ -108,6 +128,7 @@ Herramienta + comando:
 # tests
 # coverage
 # mutation
+# complexity (lizard --CCN 10 …)
 # sast
 # e2e
 ```

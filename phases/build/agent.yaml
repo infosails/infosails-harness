@@ -29,14 +29,19 @@ internal_agents:
   - planner
   - tdd-dev
   - coverage-gate
+  - complexity-gate
+  - sast
   - mutation
   - e2e
   - integrator
+  - critic
   - scribe
+graph: .cursor/skills/build/graph.yaml
 
 quality_gates:
   coverage_min: 85
   mutation_score_min: 70
+  cyclomatic_max: 10
   tdd: required
   e2e: required_or_justified_skip
   parallel_work_packages: maximize

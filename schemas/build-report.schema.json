@@ -12,6 +12,7 @@
     "coverage",
     "mutation",
     "sast",
+    "complexity",
     "e2e",
     "gates",
     "markdown_path",
@@ -36,6 +37,14 @@
         "properties": {
           "id": { "type": "string" },
           "description": { "type": "string" },
+          "depends_on": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "writes": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
           "parallel": { "type": "boolean" },
           "status": { "type": "string" }
         }
@@ -60,6 +69,28 @@
         "passed": { "type": "boolean" },
         "tool": { "type": "string" },
         "command": { "type": "string" }
+      }
+    },
+    "complexity": {
+      "type": "object",
+      "required": ["max_ccn", "threshold", "passed", "tool"],
+      "properties": {
+        "max_ccn": { "type": ["number", "null"] },
+        "threshold": { "type": "number", "const": 10 },
+        "passed": { "type": "boolean" },
+        "tool": { "type": "string" },
+        "command": { "type": "string" },
+        "offenders": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "path": { "type": "string" },
+              "symbol": { "type": "string" },
+              "ccn": { "type": "number" }
+            }
+          }
+        }
       }
     },
     "sast": {
@@ -113,6 +144,7 @@
       "properties": {
         "tdd": { "type": "boolean" },
         "coverage": { "type": "boolean" },
+        "complexity": { "type": "boolean" },
         "mutation": { "type": "boolean" },
         "sast": { "type": "boolean" },
         "e2e": { "type": "boolean" },

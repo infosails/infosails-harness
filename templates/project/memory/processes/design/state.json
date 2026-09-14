@@ -6,26 +6,27 @@
   "status": "idle",
   "current_agent": null,
   "agents": {
-    "surveyor": {
-      "role": "Leer landscape, ADRs, blueprint e inventario de existencia",
-      "status": "idle",
-      "note": null
-    },
-    "architect": {
-      "role": "Proponer diseño técnico alineado a arquitectura existente",
-      "status": "idle",
-      "note": null
-    },
-    "ui-designer": {
-      "role": "UI con @infosails/design-system (csf.md); skip si no hay pantallas",
-      "status": "idle",
-      "note": null
-    },
-    "scribe": {
-      "role": "Escribir Design Package, ADRs y actualizar landscape si aplica",
-      "status": "idle",
-      "note": null
-    }
+    "surveyor": { "role": "Leer landscape, as-built, infra, ADRs, BP y lecciones", "status": "idle", "note": null },
+    "architect": { "role": "Proponer diseño técnico alineado a arquitectura existente", "status": "idle", "note": null },
+    "ui-designer": { "role": "UI con @infosails/design-system (csf.md); skip si no hay pantallas", "status": "idle", "note": null },
+    "critic": { "role": "Checklist hexagonal / BP / paths (antes de scribe)", "status": "idle", "note": null },
+    "scribe": { "role": "Escribir Design Package, ADRs y actualizar landscape si aplica", "status": "idle", "note": null }
+  },
+  "graph": {
+    "nodes": [
+      { "id": "surveyor", "role": "surveyor", "kind": "serial", "status": "idle", "writes": [] },
+      { "id": "architect", "role": "architect", "kind": "parallel", "status": "idle", "writes": [] },
+      { "id": "ui-designer", "role": "ui-designer", "kind": "parallel", "optional": true, "status": "idle", "writes": [] },
+      { "id": "critic", "role": "critic", "kind": "gate", "status": "idle", "writes": [] },
+      { "id": "scribe", "role": "scribe", "kind": "serial", "status": "idle", "writes": ["memory/designs/", "memory/architecture/", "memory/backlog.json"] }
+    ],
+    "edges": [
+      { "from": "surveyor", "to": "architect" },
+      { "from": "surveyor", "to": "ui-designer" },
+      { "from": "architect", "to": "critic" },
+      { "from": "ui-designer", "to": "critic" },
+      { "from": "critic", "to": "scribe" }
+    ]
   },
   "working": {
     "blueprint_id": null,

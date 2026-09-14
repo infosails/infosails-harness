@@ -1,0 +1,38 @@
+# Template DAG — Onboard.
+
+process: onboard
+nodes:
+  - id: code-surveyor
+    role: code-surveyor
+    kind: parallel
+    writes: []
+  - id: capability-scout
+    role: capability-scout
+    kind: parallel
+    writes: []
+  - id: docs-scout
+    role: docs-scout
+    kind: parallel
+    writes: []
+  - id: synthesizer
+    role: synthesizer
+    kind: serial
+    writes: []
+  - id: critic
+    role: critic
+    kind: gate
+    writes: []
+  - id: scribe
+    role: scribe
+    kind: serial
+    writes:
+      - memory/architecture/
+      - memory/blueprints/
+      - memory/backlog.json
+      - memory/onboard/
+edges:
+  - { from: code-surveyor, to: synthesizer }
+  - { from: capability-scout, to: synthesizer }
+  - { from: docs-scout, to: synthesizer }
+  - { from: synthesizer, to: critic }
+  - { from: critic, to: scribe }

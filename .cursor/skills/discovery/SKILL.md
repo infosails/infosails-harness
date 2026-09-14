@@ -17,8 +17,10 @@ La Orquesta **no** conoce ni habla con tus agentes.
 - Estado: `memory/processes/discovery/state.json`
 - Inbox / outbox: `memory/processes/discovery/`
 - Roster: [agents.md](agents.md)
+- Grafo: [graph.yaml](graph.yaml) · [../_shared/graph.md](../_shared/graph.md)
 - Entrevista: [interview.md](interview.md)
 - Subagentes: [../_shared/lead-subagents.md](../_shared/lead-subagents.md)
+- Crítico / lecciones: [../_shared/critic.md](../_shared/critic.md) · [../_shared/lessons.md](../_shared/lessons.md)
 
 **PROJECT_ROOT:** raíz con `harness.project.yaml`, o `playground/` si existe `playground/harness.project.yaml`.
 
@@ -26,22 +28,23 @@ La Orquesta **no** conoce ni habla con tus agentes.
 
 1. Leer inbox (`start` | `resume` | `abort`).
 2. `abort` → outbox `aborted` → return.
-3. `state.status` = `running`.
-4. Una línea: `Discovery Lead activo — voy a entrevistarte hasta dejar el alcance bien cerrado.`
+3. Instanciar grafo si falta; leer lecciones `to_process: discovery`; ejecutar **frontier** ([lead-subagents.md](../_shared/lead-subagents.md)).
+4. `state.status` = `running`.
+5. Una línea: `Discovery Lead activo — voy a entrevistarte hasta dejar el alcance bien cerrado.`
 
 ## Agentes
 
-| Orden | Agente | Rol | Paralelo |
-|-------|--------|-----|----------|
-| 1 | `interviewer` | Periodista: usuarios, tipo de app, existencia, integraciones, alcance | no (conversación con usuario) |
-| — | `inventory-scout` / `user-scout` | Blueprints/código/landscape: existencia + roles ya tipados | **sí** (subagentes) |
-| 2 | `scribe` | Materializa un blueprint **detallado** tras confirmación | no (escritor final) |
+| Orden | Agente | Rol | kind |
+|-------|--------|-----|------|
+| 1 | `interviewer` | Periodista: usuarios, tipo de app, existencia, integraciones, alcance | human |
+| 1 | `user-scout` / `inventory-scout` | BPs/código/landscape: roles + existencia | parallel (optional) |
+| 2 | `critic` | Checklist de cierre | gate |
+| 3 | `scribe` | Materializa el blueprint **detallado** tras critic + confirmación | serial |
 
-Orquestación: seguir [lead-subagents.md](../_shared/lead-subagents.md).  
-Preferir **subagentes** para investigación de usuarios/existencia en paralelo; el Lead (o un solo `interviewer`) habla con el usuario. Actualizar `state.agents.*`.  
-Fallback: el Lead encarna el rol si no hay subagente disponible.
+Orquestación: frontier del grafo ([lead-subagents.md](../_shared/lead-subagents.md)).  
+`interviewer` (Lead) ∥ scouts. **Prohibido** `scribe` si `critic` no está `done`. Fallback: encarnar el frontier en serie.
 
-**Prohibido** pasar a `scribe` con huecos, vaguedades o “luego lo vemos”.
+Si el inbox trae `linear.identifier` / descripción de un issue: es **contexto de partida**, no alcance cerrado. Entrevistá igual. No llames a Linear ni edites `memory/trackers/`.
 
 ## Entrevista (`interviewer`) — periodista
 
@@ -52,10 +55,14 @@ Resumen:
 1. Itera en rondas (no un cuestionario de una sola pasada).
 2. Cada respuesta vaga → otra pregunta más concreta.
 3. Espeja lo entendido antes de avanzar de bloque.
-4. Cierra solo cuando pase el **checklist de cierre** (interview.md).
-5. Muestra borrador **rico** → otra ronda de ajustes si hace falta → recién ahí `scribe`.
+4. Cierra solo cuando pase el **checklist de cierre** (interview.md) **y** `critic` `done`.
+5. Muestra borrador **rico** → otra ronda si hace falta → `critic` → recién ahí `scribe`.
 
 Outbox `status` opcional en ~40% y ~70% con `summary` orientado a resultado (sin nombrar agentes).
+
+## Crítico (`critic`)
+
+Checklist de [interview.md](interview.md) vía [../_shared/critic.md](../_shared/critic.md). Sin `done` en `critic` no hay `scribe`.
 
 ## Escritura (`scribe`)
 

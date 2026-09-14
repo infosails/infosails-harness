@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://infosails.dev/schemas/subagent-report.schema.json",
+  "title": "Subagent Report",
+  "description": "Contrato de retorno de un nodo al Lead. No se persiste en memory/ (salvo que el Lead copie evidencia al artefacto). Fallos de Task no son lecciones.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "node_id", "role", "status", "summary"],
+  "properties": {
+    "version": { "type": "integer", "const": 1 },
+    "node_id": { "type": "string" },
+    "role": { "type": "string" },
+    "status": {
+      "type": "string",
+      "enum": ["done", "blocked", "retry"]
+    },
+    "summary": { "type": "string" },
+    "paths_touched": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "blockers": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "evidence": {
+      "type": "object",
+      "description": "Según el rol. tdd-dev y critic tienen forma fija abajo."
+    },
+    "tdd": { "$ref": "#/$defs/tddEvidence" },
+    "critic": { "$ref": "#/$defs/criticEvidence" }
+  },
+  "$defs": {
+    "tddEvidence": {
+      "type": "object",
+      "required": ["test_files", "prod_files", "red_first", "business_asserts"],
+      "properties": {
+        "test_files": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1
+        },
+        "prod_files": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "red_first": { "type": "boolean" },
+        "business_asserts": {
+          "type": "string",
+          "description": "Qué comportamiento de Gherkin/Core cubren los asserts (no 'la función existe')."
+        }
+      }
+    },
+    "criticEvidence": {
+      "type": "object",
+      "required": ["verdict", "checklist"],
+      "properties": {
+        "verdict": { "type": "string", "enum": ["pass", "fail"] },
+        "checklist": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["item", "ok"],
+            "properties": {
+              "item": { "type": "string" },
+              "ok": { "type": "boolean" }
+            }
+          }
+        },
+        "gap": { "type": ["string", "null"] },
+        "upstream_process": {
+          "type": ["string", "null"],
+          "enum": [null, "discovery", "bug", "design", "build", "onboard", "deploy"]
+        }
+      }
+    }
+  }
+}

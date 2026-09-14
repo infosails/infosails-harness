@@ -6,31 +6,29 @@
   "status": "idle",
   "current_agent": null,
   "agents": {
-    "code-surveyor": {
-      "role": "Inspeccionar stack, módulos, repos e infra del código",
-      "status": "idle",
-      "note": null
-    },
-    "capability-scout": {
-      "role": "Detectar capacidades de producto candidatas a BP Done",
-      "status": "idle",
-      "note": null
-    },
-    "docs-scout": {
-      "role": "Extraer hechos y gaps desde documentación del repo",
-      "status": "idle",
-      "note": null
-    },
-    "synthesizer": {
-      "role": "Unificar hallazgos en landscape + lista de BPs",
-      "status": "idle",
-      "note": null
-    },
-    "scribe": {
-      "role": "Materializar landscape, BPs Done, índices, backlog e informe",
-      "status": "idle",
-      "note": null
-    }
+    "code-surveyor": { "role": "Inspeccionar stack, módulos, repos e infra del código", "status": "idle", "note": null },
+    "capability-scout": { "role": "Detectar capacidades de producto candidatas a BP Done", "status": "idle", "note": null },
+    "docs-scout": { "role": "Extraer hechos y gaps desde documentación del repo", "status": "idle", "note": null },
+    "synthesizer": { "role": "Unificar hallazgos en landscape + lista de BPs", "status": "idle", "note": null },
+    "critic": { "role": "No inventar DS/BR; BPs Done con evidencia", "status": "idle", "note": null },
+    "scribe": { "role": "Materializar landscape, BPs Done, índices, backlog e informe", "status": "idle", "note": null }
+  },
+  "graph": {
+    "nodes": [
+      { "id": "code-surveyor", "role": "code-surveyor", "kind": "parallel", "status": "idle", "writes": [] },
+      { "id": "capability-scout", "role": "capability-scout", "kind": "parallel", "status": "idle", "writes": [] },
+      { "id": "docs-scout", "role": "docs-scout", "kind": "parallel", "status": "idle", "writes": [] },
+      { "id": "synthesizer", "role": "synthesizer", "kind": "serial", "status": "idle", "writes": [] },
+      { "id": "critic", "role": "critic", "kind": "gate", "status": "idle", "writes": [] },
+      { "id": "scribe", "role": "scribe", "kind": "serial", "status": "idle", "writes": ["memory/architecture/", "memory/blueprints/", "memory/backlog.json", "memory/onboard/"] }
+    ],
+    "edges": [
+      { "from": "code-surveyor", "to": "synthesizer" },
+      { "from": "capability-scout", "to": "synthesizer" },
+      { "from": "docs-scout", "to": "synthesizer" },
+      { "from": "synthesizer", "to": "critic" },
+      { "from": "critic", "to": "scribe" }
+    ]
   },
   "working": {
     "draft_title": null,

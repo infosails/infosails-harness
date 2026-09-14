@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://infosails.dev/schemas/lessons-index.schema.json",
+  "title": "Lessons Index",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "by_symptom", "lessons"],
+  "properties": {
+    "version": { "type": "integer", "const": 1 },
+    "by_symptom": {
+      "type": "object",
+      "description": "Índice por síntoma (slug) → ids LSN. El surveyor lee esto como el landscape.",
+      "additionalProperties": {
+        "type": "array",
+        "items": { "type": "string" }
+      }
+    },
+    "lessons": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "to_process", "symptom", "path"],
+        "properties": {
+          "id": { "type": "string" },
+          "to_process": { "type": "string" },
+          "from_process": { "type": "string" },
+          "artifact_id": { "type": ["string", "null"] },
+          "symptom": { "type": "string" },
+          "summary": { "type": "string" },
+          "path": { "type": "string" }
+        }
+      }
+    }
+  }
+}

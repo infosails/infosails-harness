@@ -65,27 +65,43 @@ setup_skeleton() {
     [[ -d "$PLAY/memory/processes/design" ]] || cp -R "$TEMPLATE/memory/processes/design" "$PLAY/memory/processes/design"
     [[ -d "$PLAY/memory/processes/build" ]] || cp -R "$TEMPLATE/memory/processes/build" "$PLAY/memory/processes/build"
     [[ -d "$PLAY/memory/processes/onboard" ]] || cp -R "$TEMPLATE/memory/processes/onboard" "$PLAY/memory/processes/onboard"
+    [[ -d "$PLAY/memory/processes/deploy" ]] || cp -R "$TEMPLATE/memory/processes/deploy" "$PLAY/memory/processes/deploy"
     [[ -d "$PLAY/memory/builds" ]] || cp -R "$TEMPLATE/memory/builds" "$PLAY/memory/builds"
     [[ -d "$PLAY/memory/onboard" ]] || cp -R "$TEMPLATE/memory/onboard" "$PLAY/memory/onboard"
-    # Activar design/build/onboard en director-state si siguen planned o faltan
+    [[ -d "$PLAY/memory/deploys" ]] || cp -R "$TEMPLATE/memory/deploys" "$PLAY/memory/deploys"
+    [[ -d "$PLAY/memory/trackers" ]] || cp -R "$TEMPLATE/memory/trackers" "$PLAY/memory/trackers"
+    [[ -d "$PLAY/memory/costs" ]] || cp -R "$TEMPLATE/memory/costs" "$PLAY/memory/costs"
+    if [[ -d "$PLAY/memory/costs" ]]; then
+      [[ -f "$PLAY/memory/costs/rates.json" ]] || cp "$TEMPLATE/memory/costs/rates.json" "$PLAY/memory/costs/rates.json"
+      [[ -f "$PLAY/memory/costs/README.md" ]] || cp "$TEMPLATE/memory/costs/README.md" "$PLAY/memory/costs/README.md"
+      [[ -f "$PLAY/memory/costs/ledger.json" ]] || cp "$TEMPLATE/memory/costs/ledger.json" "$PLAY/memory/costs/ledger.json"
+    fi
+    # Activar design/build/onboard/deploy en director-state si siguen planned o faltan
     if [[ "$(uname)" == "Darwin" ]]; then
       sed -i '' \
         -e 's/"design": { "availability": "planned"/"design": { "availability": "active"/' \
         -e 's/"build": { "availability": "planned"/"build": { "availability": "active"/' \
+        -e 's/"deploy": { "availability": "planned"/"deploy": { "availability": "active"/' \
         "$PLAY/memory/director-state.json" 2>/dev/null || true
     else
       sed -i \
         -e 's/"design": { "availability": "planned"/"design": { "availability": "active"/' \
         -e 's/"build": { "availability": "planned"/"build": { "availability": "active"/' \
+        -e 's/"deploy": { "availability": "planned"/"deploy": { "availability": "active"/' \
         "$PLAY/memory/director-state.json" 2>/dev/null || true
     fi
-    if [[ -f "$PLAY/memory/director-state.json" ]] && ! grep -q '"onboard"' "$PLAY/memory/director-state.json"; then
+    if [[ -f "$PLAY/memory/director-state.json" ]]; then
       python3 - "$PLAY/memory/director-state.json" <<'PY'
 import json, sys
 from pathlib import Path
 p = Path(sys.argv[1])
 ds = json.loads(p.read_text(encoding="utf-8"))
-ds.setdefault("processes", {})["onboard"] = {"availability": "active", "status": "idle"}
+procs = ds.setdefault("processes", {})
+for name in ("onboard", "deploy"):
+    entry = procs.get(name) or {}
+    entry["availability"] = "active"
+    entry.setdefault("status", "idle")
+    procs[name] = entry
 p.write_text(json.dumps(ds, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 PY
     fi
@@ -93,6 +109,9 @@ PY
 
   cp "$TEMPLATE/AGENTS.md" "$PLAY/AGENTS.md"
   cp "$TEMPLATE/harness.project.yaml" "$PLAY/harness.project.yaml"
+  if [[ -f "$TEMPLATE/.env.example" ]]; then
+    cp "$TEMPLATE/.env.example" "$PLAY/.env.example"
+  fi
 
   # Skills y schemas del kit en vivo (symlink)
   mkdir -p "$PLAY/.cursor"
@@ -100,6 +119,12 @@ PY
   mkdir -p "$PLAY/.cursor/rules"
   rm -f "$PLAY/.cursor/rules/"*.mdc 2>/dev/null || true
   cp "$TEMPLATE/.cursor/rules/"*.mdc "$PLAY/.cursor/rules/"
+  mkdir -p "$PLAY/.cursor/hooks"
+  cp "$HARNESS_HOME/scripts/record-usage" "$PLAY/.cursor/hooks/record-usage.py"
+  chmod +x "$PLAY/.cursor/hooks/record-usage.py"
+  if [[ -f "$TEMPLATE/.cursor/hooks.json" ]]; then
+    cp "$TEMPLATE/.cursor/hooks.json" "$PLAY/.cursor/hooks.json"
+  fi
 
   mkdir -p "$PLAY/templates" "$PLAY/schemas"
   link_or_copy "$HARNESS_HOME/templates/feature-blueprint.md" "$PLAY/templates/feature-blueprint.md"
@@ -108,10 +133,15 @@ PY
   link_or_copy "$HARNESS_HOME/schemas/feature-blueprint.schema.json" "$PLAY/schemas/feature-blueprint.schema.json"
   link_or_copy "$HARNESS_HOME/templates/build-report.md" "$PLAY/templates/build-report.md"
   link_or_copy "$HARNESS_HOME/templates/onboard-report.md" "$PLAY/templates/onboard-report.md"
+  link_or_copy "$HARNESS_HOME/templates/deploy-report.md" "$PLAY/templates/deploy-report.md"
   link_or_copy "$HARNESS_HOME/schemas/design-package.schema.json" "$PLAY/schemas/design-package.schema.json"
   link_or_copy "$HARNESS_HOME/schemas/build-report.schema.json" "$PLAY/schemas/build-report.schema.json"
+  link_or_copy "$HARNESS_HOME/schemas/deploy-report.schema.json" "$PLAY/schemas/deploy-report.schema.json"
   link_or_copy "$HARNESS_HOME/schemas/director-state.schema.json" "$PLAY/schemas/director-state.schema.json"
   link_or_copy "$HARNESS_HOME/schemas/process-lead-state.schema.json" "$PLAY/schemas/process-lead-state.schema.json"
+  link_or_copy "$HARNESS_HOME/schemas/linear-tracker.schema.json" "$PLAY/schemas/linear-tracker.schema.json"
+  link_or_copy "$HARNESS_HOME/schemas/backlog.schema.json" "$PLAY/schemas/backlog.schema.json"
+  link_or_copy "$HARNESS_HOME/schemas/costs-ledger.schema.json" "$PLAY/schemas/costs-ledger.schema.json"
 
   # Placeholders
   local files=(
@@ -128,6 +158,7 @@ PY
   [[ -f "$PLAY/memory/processes/design/state.json" ]] && files+=("$PLAY/memory/processes/design/state.json")
   [[ -f "$PLAY/memory/processes/build/state.json" ]] && files+=("$PLAY/memory/processes/build/state.json")
   [[ -f "$PLAY/memory/processes/onboard/state.json" ]] && files+=("$PLAY/memory/processes/onboard/state.json")
+  [[ -f "$PLAY/memory/processes/deploy/state.json" ]] && files+=("$PLAY/memory/processes/deploy/state.json")
   [[ -f "$PLAY/memory/architecture/landscape.md" ]] && files+=("$PLAY/memory/architecture/landscape.md")
   [[ -f "$PLAY/memory/architecture/landscape.json" ]] && files+=("$PLAY/memory/architecture/landscape.json")
 

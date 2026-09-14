@@ -23,3 +23,5 @@ No conoce interviewer/scribe/etc.
 | `memory/processes/*/inbox-from-orchestra.json` | Orquesta escribe |
 | `memory/processes/*/outbox-to-orchestra.json` | Lead escribe |
 | `memory/processes/*/state.json` | Lead (privado) |
+| `memory/trackers/` | Orquesta (proyección Linear, si enabled) |
+| `memory/costs/` | Hook Cursor (tokens); Orquesta lee |

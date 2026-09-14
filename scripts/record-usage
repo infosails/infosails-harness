@@ -1,0 +1,376 @@
+#!/usr/bin/env python3
+"""Registra tokens del hook Cursor `stop` / `subagentStop` en memory/costs/.
+
+Fail-open: siempre imprime {} y sale 0. No bloquea al agente.
+"""
+from __future__ import annotations
+
+import json
+import os
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
+
+LEDGER_NAME = "ledger.json"
+EVENTS_NAME = "events.jsonl"
+RATES_NAME = "rates.json"
+SEEN_NAME = "seen.json"
+
+
+def utcnow() -> str:
+    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _int(v: Any) -> int:
+    if v is None or v is False:
+        return 0
+    try:
+        return int(v)
+    except (TypeError, ValueError):
+        return 0
+
+
+def extract_tokens(payload: dict[str, Any]) -> dict[str, int]:
+    nested = payload.get("usage") or payload.get("token_usage") or {}
+    if not isinstance(nested, dict):
+        nested = {}
+
+    def pick(*names: str) -> int:
+        for n in names:
+            if payload.get(n) is not None:
+                return _int(payload.get(n))
+            if nested.get(n) is not None:
+                return _int(nested.get(n))
+        return 0
+
+    return {
+        "input_tokens": pick("input_tokens", "prompt_tokens"),
+        "output_tokens": pick("output_tokens", "completion_tokens"),
+        "cache_read_tokens": pick("cache_read_tokens", "cache_read"),
+        "cache_write_tokens": pick("cache_write_tokens", "cache_write"),
+    }
+
+
+def empty_bucket() -> dict[str, Any]:
+    return {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 0,
+        "turns": 0,
+        "usd_estimate": None,
+    }
+
+
+def add_tokens(bucket: dict[str, Any], toks: dict[str, int]) -> None:
+    for k in ("input_tokens", "output_tokens", "cache_read_tokens", "cache_write_tokens"):
+        bucket[k] = int(bucket.get(k) or 0) + int(toks.get(k) or 0)
+    bucket["turns"] = int(bucket.get("turns") or 0) + 1
+
+
+def resolve_project_root(payload: dict[str, Any]) -> Path | None:
+    roots = payload.get("workspace_roots") or []
+    cwd = None
+    if roots:
+        cwd = Path(roots[0])
+    elif payload.get("cwd"):
+        cwd = Path(payload["cwd"])
+    else:
+        cwd = Path.cwd()
+    cwd = cwd.resolve()
+    if (cwd / "harness.project.yaml").is_file():
+        return cwd
+    play = cwd / "playground"
+    if (play / "harness.project.yaml").is_file():
+        return play
+    return None
+
+
+def load_json(path: Path, default: Any) -> Any:
+    if not path.is_file():
+        return default
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return default
+
+
+def dump_json(path: Path, data: Any) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+
+def costs_enabled(project_root: Path) -> bool:
+    yaml_path = project_root / "harness.project.yaml"
+    if not yaml_path.is_file():
+        return True
+    in_costs = False
+    for line in yaml_path.read_text(encoding="utf-8").splitlines():
+        if line.startswith("costs:"):
+            in_costs = True
+            continue
+        if in_costs:
+            if line and line[0] not in " \t#" and not line.startswith(" "):
+                break
+            s = line.strip()
+            if s.startswith("enabled:"):
+                val = s.split(":", 1)[1].strip().lower()
+                return val not in ("false", "no", "0")
+    return True
+
+
+def load_director(project_root: Path) -> dict[str, Any]:
+    return load_json(project_root / "memory" / "director-state.json", {})
+
+
+def attribution(ds: dict[str, Any]) -> tuple[str, str | None, str | None]:
+    session = ds.get("session") or {}
+    focus = ds.get("focus") or {}
+    process = session.get("active_process") or "director"
+    artifact_id = focus.get("artifact_id")
+    artifact_type = focus.get("artifact_type")
+    if artifact_id == "":
+        artifact_id = None
+    return str(process), artifact_id, artifact_type
+
+
+def load_rates(project_root: Path) -> dict[str, Any]:
+    return load_json(project_root / "memory" / "costs" / RATES_NAME, {})
+
+
+def usd_for(toks: dict[str, int], model: str | None, rates: dict[str, Any]) -> float | None:
+    per_m = rates.get("per_million") or {}
+    if not isinstance(per_m, dict) or not per_m:
+        return None
+    row = None
+    if model and model in per_m:
+        row = per_m[model]
+    if not isinstance(row, dict):
+        row = per_m.get("default")
+    if not isinstance(row, dict):
+        return None
+    total = 0.0
+    any_rate = False
+    mapping = (
+        ("input_tokens", "input"),
+        ("output_tokens", "output"),
+        ("cache_read_tokens", "cache_read"),
+        ("cache_write_tokens", "cache_write"),
+    )
+    for tok_key, rate_key in mapping:
+        rate = row.get(rate_key)
+        if rate is None:
+            continue
+        try:
+            r = float(rate)
+        except (TypeError, ValueError):
+            continue
+        any_rate = True
+        total += (toks.get(tok_key) or 0) / 1_000_000.0 * r
+    if not any_rate:
+        return None
+    return round(total, 6)
+
+
+def apply_usd(bucket: dict[str, Any], rates: dict[str, Any], model: str | None = None) -> None:
+    toks = {k: int(bucket.get(k) or 0) for k in (
+        "input_tokens", "output_tokens", "cache_read_tokens", "cache_write_tokens"
+    )}
+    bucket["usd_estimate"] = usd_for(toks, model, rates)
+
+
+def seen_key(payload: dict[str, Any], event_name: str) -> str:
+    gid = payload.get("generation_id") or ""
+    if gid:
+        return f"{event_name}:{gid}"
+    conv = payload.get("conversation_id") or payload.get("session_id") or "unknown"
+    toks = extract_tokens(payload)
+    return f"{event_name}:{conv}:{payload.get('status')}:{toks['input_tokens']}:{toks['output_tokens']}"
+
+
+def backfill_artifact(
+    events_path: Path,
+    conversation_id: str | None,
+    process: str,
+    artifact_id: str,
+    artifact_type: str | None,
+) -> None:
+    if not conversation_id or not events_path.is_file() or not artifact_id:
+        return
+    lines = events_path.read_text(encoding="utf-8").splitlines()
+    out: list[str] = []
+    changed = False
+    for line in lines:
+        if not line.strip():
+            continue
+        try:
+            ev = json.loads(line)
+        except json.JSONDecodeError:
+            out.append(line)
+            continue
+        if (
+            ev.get("conversation_id") == conversation_id
+            and ev.get("process") == process
+            and not ev.get("artifact_id")
+        ):
+            ev["artifact_id"] = artifact_id
+            if artifact_type:
+                ev["artifact_type"] = artifact_type
+            changed = True
+        out.append(json.dumps(ev, ensure_ascii=False))
+    if changed:
+        events_path.write_text("\n".join(out) + "\n", encoding="utf-8")
+
+
+def rebuild_ledger(events_path: Path, rates: dict[str, Any]) -> dict[str, Any]:
+    ledger = {
+        "version": 1,
+        "updated_at": utcnow(),
+        "currency": rates.get("currency") or "USD",
+        "usd_is_estimate": True,
+        "project": empty_bucket(),
+        "by_artifact": {},
+        "unattributed": empty_bucket(),
+        "by_process": {},
+    }
+    if not events_path.is_file():
+        return ledger
+    for line in events_path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        try:
+            ev = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        toks = {
+            "input_tokens": _int(ev.get("input_tokens")),
+            "output_tokens": _int(ev.get("output_tokens")),
+            "cache_read_tokens": _int(ev.get("cache_read_tokens")),
+            "cache_write_tokens": _int(ev.get("cache_write_tokens")),
+        }
+        add_tokens(ledger["project"], toks)
+        proc = ev.get("process") or "director"
+        ledger["by_process"].setdefault(proc, empty_bucket())
+        add_tokens(ledger["by_process"][proc], toks)
+        aid = ev.get("artifact_id")
+        if not aid:
+            add_tokens(ledger["unattributed"], toks)
+            continue
+        art = ledger["by_artifact"].setdefault(
+            aid,
+            {
+                "type": ev.get("artifact_type"),
+                "by_process": {},
+                "totals": empty_bucket(),
+            },
+        )
+        if ev.get("artifact_type") and not art.get("type"):
+            art["type"] = ev.get("artifact_type")
+        bp = art["by_process"].setdefault(proc, empty_bucket())
+        add_tokens(bp, toks)
+        add_tokens(art["totals"], toks)
+
+    apply_usd(ledger["project"], rates)
+    apply_usd(ledger["unattributed"], rates)
+    for b in ledger["by_process"].values():
+        apply_usd(b, rates)
+    for art in ledger["by_artifact"].values():
+        apply_usd(art["totals"], rates)
+        for b in art["by_process"].values():
+            apply_usd(b, rates)
+    return ledger
+
+
+def with_lock(lock_path: Path, fn) -> None:
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    fh = open(lock_path, "a+", encoding="utf-8")
+    try:
+        if sys.platform != "win32":
+            import fcntl
+
+            fcntl.flock(fh.fileno(), fcntl.LOCK_EX)
+        fn()
+    finally:
+        if sys.platform != "win32":
+            import fcntl
+
+            fcntl.flock(fh.fileno(), fcntl.LOCK_UN)
+        fh.close()
+
+
+def record(payload: dict[str, Any]) -> None:
+    event_name = payload.get("hook_event_name") or os.environ.get("INFOSAILS_HOOK_EVENT") or "stop"
+    if event_name not in ("stop", "subagentStop", "subagent_stop"):
+        # still try: Cursor may omit the name when matcher is stop-only
+        event_name = event_name or "stop"
+
+    project_root = resolve_project_root(payload)
+    if project_root is None:
+        return
+    if not costs_enabled(project_root):
+        return
+
+    costs_dir = project_root / "memory" / "costs"
+    costs_dir.mkdir(parents=True, exist_ok=True)
+
+    def _write() -> None:
+        seen_path = costs_dir / SEEN_NAME
+        seen = load_json(seen_path, {"ids": []})
+        ids = list(seen.get("ids") or [])
+        key = seen_key(payload, event_name)
+        if key in ids:
+            return
+        ids.append(key)
+        if len(ids) > 4000:
+            ids = ids[-3000:]
+        seen["ids"] = ids
+        dump_json(seen_path, seen)
+
+        ds = load_director(project_root)
+        process, artifact_id, artifact_type = attribution(ds)
+        toks = extract_tokens(payload)
+        conv = payload.get("conversation_id") or payload.get("session_id")
+        model = payload.get("model") or payload.get("model_id")
+        event = {
+            "at": utcnow(),
+            "hook_event": event_name,
+            "conversation_id": conv,
+            "generation_id": payload.get("generation_id"),
+            "model": model,
+            "status": payload.get("status"),
+            "process": process,
+            "artifact_id": artifact_id,
+            "artifact_type": artifact_type,
+            **toks,
+        }
+        events_path = costs_dir / EVENTS_NAME
+        with events_path.open("a", encoding="utf-8") as ef:
+            ef.write(json.dumps(event, ensure_ascii=False) + "\n")
+
+        if artifact_id:
+            backfill_artifact(events_path, conv, process, artifact_id, artifact_type)
+
+        rates = load_rates(project_root)
+        ledger = rebuild_ledger(events_path, rates)
+        dump_json(costs_dir / LEDGER_NAME, ledger)
+
+    with_lock(costs_dir / ".lock", _write)
+
+
+def main() -> None:
+    try:
+        raw = sys.stdin.read()
+        payload = json.loads(raw) if raw.strip() else {}
+        if isinstance(payload, dict):
+            record(payload)
+    except Exception as exc:
+        try:
+            sys.stderr.write(f"infosails record-usage: {exc}\n")
+        except Exception:
+            pass
+    sys.stdout.write("{}\n")
+
+
+if __name__ == "__main__":
+    main()

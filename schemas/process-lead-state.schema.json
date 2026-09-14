@@ -2,9 +2,9 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://infosails.dev/schemas/process-lead-state.schema.json",
   "title": "Process Lead State",
-  "description": "Estado interno de un proceso. Solo lo edita el Lead de ese proceso.",
+  "description": "Estado interno de un proceso. Solo lo edita el Lead. graph es la fuente de verdad; agents se RECONSTRUYE desde nodos (mismo set de roles, status plegado). Un agents key sin node.role o un node.role sin agents key es inválido.",
   "type": "object",
-  "required": ["version", "process", "updated_at", "lead", "status", "agents", "history"],
+  "required": ["version", "process", "updated_at", "lead", "status", "graph", "agents", "history"],
   "properties": {
     "version": { "type": "integer", "const": 1 },
     "process": { "type": "string" },
@@ -14,30 +14,107 @@
       "type": "string",
       "enum": ["idle", "running", "blocked", "completed", "aborted"]
     },
-    "current_agent": { "type": ["string", "null"] },
+    "current_agent": {
+      "type": ["string", "null"],
+      "description": "Compatibilidad. Si hay varios nodos running, null o el primero del frontier. No orquestar desde aquí."
+    },
     "agents": {
       "type": "object",
       "additionalProperties": {
-        "type": "object",
-        "required": ["role", "status"],
-        "properties": {
-          "role": { "type": "string" },
-          "status": {
-            "type": "string",
-            "enum": ["idle", "running", "done", "blocked", "skipped"]
-          },
-          "note": { "type": ["string", "null"] }
-        }
+        "$ref": "#/$defs/agentStatus"
       }
     },
+    "graph": { "$ref": "#/$defs/graph" },
     "working": {
       "type": "object",
       "properties": {
         "draft_title": { "type": ["string", "null"] },
         "artifact_id": { "type": ["string", "null"] },
-        "artifact_path": { "type": ["string", "null"] }
+        "artifact_path": { "type": ["string", "null"] },
+        "packages": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/workPackage" }
+        }
       }
     },
     "history": { "type": "array" }
+  },
+  "$defs": {
+    "agentStatus": {
+      "type": "object",
+      "required": ["role", "status"],
+      "properties": {
+        "role": { "type": "string" },
+        "status": {
+          "type": "string",
+          "enum": ["idle", "running", "done", "blocked", "skipped"]
+        },
+        "note": { "type": ["string", "null"] }
+      }
+    },
+    "nodeStatus": {
+      "type": "string",
+      "enum": ["idle", "running", "done", "blocked", "skipped"]
+    },
+    "nodeKind": {
+      "type": "string",
+      "enum": ["serial", "parallel", "gate", "human"]
+    },
+    "graphNode": {
+      "type": "object",
+      "required": ["id", "role", "status"],
+      "properties": {
+        "id": { "type": "string" },
+        "role": { "type": "string" },
+        "kind": { "$ref": "#/$defs/nodeKind" },
+        "status": { "$ref": "#/$defs/nodeStatus" },
+        "optional": { "type": "boolean" },
+        "writes": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "note": { "type": ["string", "null"] }
+      }
+    },
+    "graphEdge": {
+      "type": "object",
+      "required": ["from", "to"],
+      "properties": {
+        "from": { "type": "string" },
+        "to": { "type": "string" }
+      }
+    },
+    "graph": {
+      "type": "object",
+      "required": ["nodes", "edges"],
+      "additionalProperties": false,
+      "properties": {
+        "nodes": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/graphNode" }
+        },
+        "edges": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/graphEdge" }
+        }
+      }
+    },
+    "workPackage": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "description": { "type": "string" },
+        "depends_on": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "writes": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "parallel": { "type": "boolean" },
+        "status": { "type": "string" }
+      }
+    }
   }
 }

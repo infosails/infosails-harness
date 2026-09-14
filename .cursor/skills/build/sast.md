@@ -8,7 +8,7 @@ Complementa TDD y mutación: no los sustituye.
 ```text
 tdd-dev (Red incluye pruebas de seguridad cuando aplica)
     → coverage-gate
-    → [ sast ∥ mutation ∥ e2e ]   ← subagentes en paralelo
+    → [ sast ∥ mutation ∥ e2e ∥ complexity-gate ]   ← subagentes en paralelo
     → integrator
 ```
 
@@ -18,7 +18,7 @@ tdd-dev (Red incluye pruebas de seguridad cuando aplica)
 | **Mutación** | Que los tests (incl. seguridad) maten mutantes | Secrets hardcodeados, deps vulnerables, misconfig |
 | **SAST** (`sast`) | Hallazgos estáticos en el **código de la historia** (inyección, secretos, crypto débil, misconfig) | Comportamiento dinámico / flujos e2e |
 
-SAST corre **después** de cobertura (código de la historia ya escrito) y **en paralelo** con mutación y e2e: no depende de ellas.
+SAST corre **después** de cobertura (código de la historia ya escrito) y **en paralelo** con mutación, e2e y `complexity-gate`: no depende de ellas.
 
 ## Herramientas (elegir según stack)
 

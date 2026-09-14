@@ -1,0 +1,12 @@
+{
+  "currency": "USD",
+  "per_million": {
+    "default": {
+      "input": null,
+      "output": null,
+      "cache_read": null,
+      "cache_write": null
+    }
+  },
+  "note": "USD por 1 millón de tokens. null = no estimar dinero (solo se cuentan tokens). Completá con tus tarifas. El hook rebuild del ledger aplica estas tasas."
+}

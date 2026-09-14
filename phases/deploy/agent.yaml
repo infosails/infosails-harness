@@ -1,0 +1,19 @@
+id: deploy
+name: Deploy
+status: active
+lead: deploy-lead
+skill: .cursor/skills/deploy/SKILL.md
+description: >
+  Commit y push a main (producto + home). Después vercel --prod en apps Vercel.
+state: memory/processes/deploy/state.json
+inbox: memory/processes/deploy/inbox-from-orchestra.json
+outbox: memory/processes/deploy/outbox-to-orchestra.json
+reads:
+  - memory/builds
+  - product repos
+  - home git
+writes:
+  - product repos (git main)
+  - home git (memory/)
+  - memory/deploys
+graph: .cursor/skills/deploy/graph.yaml

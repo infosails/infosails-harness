@@ -52,6 +52,8 @@ Si `processes.<id>.availability === "planned"`:
 
 **Design está `active`:** tras `discovery_done` puede delegar al Design Lead.
 
+**Deploy está `active`:** tras `build_done` puede delegar al Deploy Lead (git `main` + `vercel --prod`). Tras `complete` de Deploy: stage `done`.
+
 Cuando un proceso pase de `planned` → `active` en el kit, el Director podrá `delegate`.
 
 ## Eventos de history
@@ -67,9 +69,18 @@ Cuando un proceso pase de `planned` → `active` en el kit, el Director podrá `
 
 ## Sync con backlog
 
-Tras `complete` de Discovery/Bug/Design/Build/Onboard, el Director:
+Tras `complete` de Discovery/Bug/Design/Build/Onboard/Deploy, el Director:
 
-1. Lee el artefacto (`blueprints` | `bugs` | `designs` | `builds` | `onboard`)
-2. Upsert en `artifacts`
-3. Asegura entrada en `memory/backlog.json` (Onboard: solo sync; BPs Done ya vienen del Lead)
-4. Propone la siguiente transición (Onboard → menú; sin delegate automático)
+1. Lee el artefacto (`blueprints` | `bugs` | `designs` | `builds` | `onboard` | `deploys`)
+2. Upsert en `artifacts` con `derived_from`:
+   - Design `DS-…` ← focus `BP-…`
+   - Build `BR-…` ← focus `DS-…` o `BUG-…`
+   - Deploy `DR-…` ← focus `BR-…`
+   - Discovery / Bug / Onboard: `derived_from: []` (raíz de linaje)
+   Si el padre ya está en `artifacts`, no lo borres; el hijo apunta al padre.
+3. Asegura entrada en `memory/backlog.json` (Onboard: solo sync; BPs Done ya vienen del Lead; Deploy: `next_hint: null`)
+4. Si `trackers.linear.enabled`: proyección a Linear ([linear.md](linear.md)). Best-effort; no reviertas el `complete` si el script falla.
+5. Snapshot de tokens en `history[].usage` ([costs.md](costs.md))
+6. Propone la siguiente transición (Onboard → menú; sin delegate automático)
+
+Si el backlog tenía un ítem `type: linear_issue` reclamado para este artefacto, actualizalo al id `BP-…`/`BUG-…`, conservá el bloque `linear:`.

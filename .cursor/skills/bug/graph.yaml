@@ -1,0 +1,27 @@
+# Template DAG — Bug.
+
+process: bug
+nodes:
+  - id: triager
+    role: triager
+    kind: human
+    writes: []
+  - id: repro-scout
+    role: repro-scout
+    kind: parallel
+    optional: true
+    writes: []
+  - id: critic
+    role: critic
+    kind: gate
+    writes: []
+  - id: scribe
+    role: scribe
+    kind: serial
+    writes:
+      - memory/bugs/
+      - memory/backlog.json
+edges:
+  - { from: triager, to: critic }
+  - { from: repro-scout, to: critic }
+  - { from: critic, to: scribe }

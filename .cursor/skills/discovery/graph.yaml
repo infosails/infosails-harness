@@ -1,0 +1,34 @@
+# Template DAG — Discovery. Instanciar en state.json al start.
+# Algoritmo: ../_shared/graph.md
+
+process: discovery
+nodes:
+  - id: interviewer
+    role: interviewer
+    kind: human
+    writes: []
+  - id: user-scout
+    role: user-scout
+    kind: parallel
+    optional: true
+    writes: []
+  - id: inventory-scout
+    role: inventory-scout
+    kind: parallel
+    optional: true
+    writes: []
+  - id: critic
+    role: critic
+    kind: gate
+    writes: []
+  - id: scribe
+    role: scribe
+    kind: serial
+    writes:
+      - memory/blueprints/
+      - memory/backlog.json
+edges:
+  - { from: interviewer, to: critic }
+  - { from: user-scout, to: critic }
+  - { from: inventory-scout, to: critic }
+  - { from: critic, to: scribe }

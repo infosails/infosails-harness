@@ -1,19 +1,19 @@
 # Agentes internos — Design
 
-Solo el **Design Lead** los conoce y activa (como **subagentes** en paralelo cuando aplique).
+Solo el **Design Lead** los conoce y activa (según el grafo).
 
-Guía: [../_shared/lead-subagents.md](../_shared/lead-subagents.md).
+Grafo: [graph.yaml](graph.yaml). Guía: [../_shared/lead-subagents.md](../_shared/lead-subagents.md).
 
-| id | Rol | Paralelo |
-|----|-----|----------|
-| `surveyor` | Landscape, as-built, **infra**, ADRs, BP | no (primero) |
-| `architect` | Diseño app + infra + repos + **Mermaid** (secuencia/componentes) | **sí** con ui-designer |
-| `ui-designer` | UI/UX + perfiles/tipo app del BP + sabores **`@infosails/design-system`**; skip si no hay UI | **sí** con architect |
-| `scribe` | DS + updates landscape/as-built/infra/**repos**/ADRs; **crear repos** si aplica | no |
+| id | Rol | kind |
+|----|-----|------|
+| `surveyor` | Landscape, as-built, infra, ADRs, BP, **lecciones** | serial |
+| `architect` | Diseño app + infra + repos + Mermaid | parallel |
+| `ui-designer` | UI/UX + design system; skip si no hay UI | parallel (optional) |
+| `critic` | Hexagonal / BP / paths / Gherkin mapeable / UI mapa | gate |
+| `scribe` | DS + landscape/as-built/infra/repos/ADRs; crear repos si aplica | serial |
 
-Orden: `surveyor` → [`architect` ∥ `ui-designer`] → confirmación (app + infra + repos + UI) → `scribe`.
+`surveyor` → [`architect` ∥ `ui-designer`] → `critic` → confirmación humana del Lead → `scribe`.
 
-Guía UI: [ui-designer.md](ui-designer.md).  
-Diagramas: [diagrams.md](diagrams.md).
+Si faltan perfiles o tipo de app en el BP: no inventar. `blocked` + lección a Discovery.
 
-No `complete` si el diseño asume infra o repos no listados/creados, o UI sin mapa al design system (cuando hay pantallas).
+Guía UI: [ui-designer.md](ui-designer.md). Diagramas: [diagrams.md](diagrams.md). Crítico: [../_shared/critic.md](../_shared/critic.md).

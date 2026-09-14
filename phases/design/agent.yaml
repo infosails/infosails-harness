@@ -25,4 +25,7 @@ writes:
 internal_agents:
   - surveyor
   - architect
+  - ui-designer
+  - critic
   - scribe
+graph: .cursor/skills/design/graph.yaml

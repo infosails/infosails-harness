@@ -32,7 +32,7 @@
       "properties": {
         "artifact_type": {
           "type": ["string", "null"],
-          "enum": [null, "blueprint", "bug", "onboard"]
+          "enum": [null, "blueprint", "bug", "onboard", "design", "build_report", "deploy_report"]
         },
         "artifact_id": { "type": ["string", "null"] },
         "path": { "type": ["string", "null"] },
@@ -63,14 +63,19 @@
         "type": "object",
         "required": ["type", "path", "stage", "next_process"],
         "properties": {
-          "type": { "type": "string", "enum": ["blueprint", "bug", "onboard"] },
+          "type": { "type": "string", "enum": ["blueprint", "bug", "onboard", "design", "build_report", "deploy_report"] },
           "path": { "type": "string" },
           "stage": { "type": "string" },
           "next_process": {
             "type": ["string", "null"],
             "enum": [null, "discovery", "design", "build", "deploy", "bug", "onboard"]
           },
-          "blocked_reason": { "type": ["string", "null"] }
+          "blocked_reason": { "type": ["string", "null"] },
+          "derived_from": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "IDs de artefactos padre (BP→DS→BR→DR)."
+          }
         }
       }
     },
@@ -106,7 +111,18 @@
           "from_process": { "type": ["string", "null"] },
           "to_process": { "type": ["string", "null"] },
           "artifact_id": { "type": ["string", "null"] },
-          "note": { "type": ["string", "null"] }
+          "note": { "type": ["string", "null"] },
+          "usage": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "input_tokens": { "type": "integer" },
+              "output_tokens": { "type": "integer" },
+              "cache_read_tokens": { "type": "integer" },
+              "cache_write_tokens": { "type": "integer" },
+              "usd_estimate": { "type": ["number", "null"] }
+            }
+          }
         }
       }
     }

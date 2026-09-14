@@ -1,0 +1,339 @@
+#!/usr/bin/env bash
+# Actualiza un home InfoSails ya instanciado a la versión del kit.
+# Copia skills/templates/schemas/rules. No pisa memory/ de producto ni harness.project.yaml.
+set -euo pipefail
+
+usage() {
+  cat <<'EOF'
+Uso:
+  update-project [--path <dir>] [--dry-run]
+
+Actualiza el **home** de un proyecto que ya usa el harness
+(harness.project.yaml + memory/) a la versión del kit instalado.
+
+  --path DIR    Home del producto (default: directorio actual)
+  --dry-run     Mostrar qué haría, sin escribir
+
+Ejemplos:
+  infosails-update
+  infosails-update --path ~/Projects/mi-app
+  infosails-update --dry-run
+
+No uses infosails-init --into para esto: pisa yaml y puede mezclar memory/.
+
+No toca:
+  memory/blueprints, bugs, designs, builds, architecture, backlog
+  harness.project.yaml, README.md, .env, código de producto
+
+Sí actualiza:
+  .cursor/skills, .cursor/rules, templates/*.md, schemas
+  hook record-usage
+  carpetas memory/ que falten (p. ej. processes/deploy)
+  director-state: procesos planned → active si el kit los trae active
+
+Variables:
+  INFOSAILS_HARNESS_HOME  Fallback si el comando no vive dentro de un kit
+EOF
+}
+
+resolve_script() {
+  local src="$1"
+  if [[ "$src" != /* ]]; then
+    src="$(pwd)/$src"
+  fi
+  while [[ -L "$src" ]]; do
+    local link
+    link="$(readlink "$src")"
+    if [[ "$link" == /* ]]; then
+      src="$link"
+    else
+      src="$(cd "$(dirname "$src")" && pwd)/$link"
+    fi
+  done
+  printf '%s\n' "$src"
+}
+
+SCRIPT_PATH="$(resolve_script "${BASH_SOURCE[0]:-$0}")"
+SCRIPT_KIT="$(cd "$(dirname "$SCRIPT_PATH")/.." && pwd)"
+ENV_KIT="${INFOSAILS_HARNESS_HOME:-}"
+
+if [[ -f "$SCRIPT_KIT/config/harness.yaml" ]]; then
+  HARNESS_HOME="$SCRIPT_KIT"
+  if [[ -n "$ENV_KIT" && "$ENV_KIT" != "$HARNESS_HOME" ]]; then
+    echo "Aviso: INFOSAILS_HARNESS_HOME apunta a:" >&2
+    echo "         $ENV_KIT" >&2
+    echo "       pero infosails-update está en:" >&2
+    echo "         $HARNESS_HOME" >&2
+    echo "       Usando el del comando. Para alinear: source ~/.zshrc (o nueva terminal)." >&2
+  fi
+elif [[ -n "$ENV_KIT" && -f "$ENV_KIT/config/harness.yaml" ]]; then
+  HARNESS_HOME="$ENV_KIT"
+else
+  echo "No encuentro kit InfoSails (config/harness.yaml)." >&2
+  echo "Instalá con ./scripts/install desde un pack/runtime." >&2
+  exit 1
+fi
+
+KIT_VERSION="$(awk '/^version:/{ print $2; exit }' "$HARNESS_HOME/config/harness.yaml" 2>/dev/null || echo "?")"
+KIT_VERSION="${KIT_VERSION%\"}"
+KIT_VERSION="${KIT_VERSION#\"}"
+
+PROJ=""
+DRY=0
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -h|--help) usage; exit 0 ;;
+    --path) PROJ="${2:-}"; shift 2 ;;
+    --dry-run) DRY=1; shift ;;
+    -*)
+      echo "Opción desconocida: $1" >&2
+      usage
+      exit 1
+      ;;
+    *)
+      echo "Argumento extra: $1" >&2
+      usage
+      exit 1
+      ;;
+  esac
+done
+
+if [[ -z "$PROJ" ]]; then
+  PROJ="$(pwd)"
+fi
+PROJ="$(cd "$PROJ" && pwd)"
+
+if [[ ! -f "$PROJ/harness.project.yaml" ]]; then
+  echo "No es un home InfoSails: falta $PROJ/harness.project.yaml" >&2
+  echo "Este comando actualiza un proyecto ya instanciado, no el kit." >&2
+  exit 1
+fi
+
+if [[ -f "$PROJ/config/harness.yaml" ]] && grep -q '^kind: kit' "$PROJ/config/harness.yaml" 2>/dev/null; then
+  echo "Ese directorio es el kit, no un proyecto." >&2
+  echo "Corré infosails-update --path /ruta/al-home (donde está memory/)." >&2
+  exit 1
+fi
+
+TEMPLATE="$HARNESS_HOME/templates/project"
+if [[ ! -d "$TEMPLATE" ]]; then
+  echo "No encuentro template de proyecto en: $TEMPLATE" >&2
+  exit 1
+fi
+
+SKILLS_SRC="$HARNESS_HOME/.cursor/skills"
+if [[ ! -d "$SKILLS_SRC" ]]; then
+  SKILLS_SRC="$HARNESS_HOME/skills"
+fi
+if [[ ! -d "$SKILLS_SRC" ]]; then
+  echo "No encuentro skills en $HARNESS_HOME/.cursor/skills ni $HARNESS_HOME/skills" >&2
+  exit 1
+fi
+
+CREATED_AT="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+SKIP_SKILLS=0
+if [[ -L "$PROJ/.cursor/skills" ]] || grep -q '^playground: true' "$PROJ/harness.project.yaml" 2>/dev/null; then
+  SKIP_SKILLS=1
+fi
+
+echo "Kit:      $HARNESS_HOME (v$KIT_VERSION)"
+echo "Proyecto: $PROJ"
+[[ "$DRY" -eq 1 ]] && echo "Modo:     dry-run (no escribe)"
+[[ "$SKIP_SKILLS" -eq 1 ]] && echo "Skills:   symlink/playground — no se pisan (el kit ya es la fuente)"
+
+do_run() {
+  if [[ "$DRY" -eq 1 ]]; then
+    echo "  $*"
+  else
+    "$@"
+  fi
+}
+
+replace_created_at() {
+  local file="$1"
+  [[ -f "$file" ]] || return 0
+  [[ "$DRY" -eq 1 ]] && return 0
+  if grep -q '{{CREATED_AT}}' "$file" 2>/dev/null; then
+    if [[ "$(uname)" == "Darwin" ]]; then
+      sed -i '' -e "s|{{CREATED_AT}}|$CREATED_AT|g" "$file"
+    else
+      sed -i -e "s|{{CREATED_AT}}|$CREATED_AT|g" "$file"
+    fi
+  fi
+}
+
+# --- skills ---
+if [[ "$SKIP_SKILLS" -eq 0 ]]; then
+  echo "Skills → $PROJ/.cursor/skills/"
+  do_run mkdir -p "$PROJ/.cursor/skills"
+  for s in director discovery bug design build onboard deploy _shared; do
+    if [[ -d "$SKILLS_SRC/$s" ]]; then
+      [[ "$DRY" -eq 1 ]] || rm -rf "$PROJ/.cursor/skills/$s"
+      do_run cp -R "$SKILLS_SRC/$s" "$PROJ/.cursor/skills/$s"
+    fi
+  done
+fi
+
+# --- rules ---
+RULES_SRC="$TEMPLATE/.cursor/rules"
+if [[ ! -d "$RULES_SRC" ]]; then
+  RULES_SRC="$TEMPLATE/cursor-rules"
+fi
+if [[ -d "$RULES_SRC" ]]; then
+  echo "Rules → $PROJ/.cursor/rules/"
+  do_run mkdir -p "$PROJ/.cursor/rules"
+  do_run cp "$RULES_SRC"/*.mdc "$PROJ/.cursor/rules/"
+fi
+
+# --- templates + schemas ---
+echo "Templates y schemas"
+do_run mkdir -p "$PROJ/templates" "$PROJ/schemas"
+if [[ "$DRY" -eq 0 ]]; then
+  cp "$HARNESS_HOME/templates"/*.md "$PROJ/templates/" 2>/dev/null || true
+  cp "$HARNESS_HOME/schemas"/*.json "$PROJ/schemas/" 2>/dev/null || true
+else
+  echo "  cp $HARNESS_HOME/templates/*.md $PROJ/templates/"
+  echo "  cp $HARNESS_HOME/schemas/*.json $PROJ/schemas/"
+fi
+
+# --- AGENTS.md del proyecto (guía de harness; no el README) ---
+if [[ -f "$TEMPLATE/AGENTS.md" ]]; then
+  echo "AGENTS.md (template de proyecto)"
+  do_run cp "$TEMPLATE/AGENTS.md" "$PROJ/AGENTS.md"
+fi
+
+# --- .env.example (nunca .env) ---
+if [[ -f "$TEMPLATE/.env.example" ]]; then
+  echo ".env.example (no se toca .env)"
+  do_run cp "$TEMPLATE/.env.example" "$PROJ/.env.example"
+fi
+
+# --- hook ---
+HOOK_SCRIPT="$HARNESS_HOME/scripts/record-usage"
+if [[ -f "$HOOK_SCRIPT" ]]; then
+  echo "Hook record-usage"
+  do_run mkdir -p "$PROJ/.cursor/hooks"
+  if [[ "$DRY" -eq 0 ]]; then
+    cp "$HOOK_SCRIPT" "$PROJ/.cursor/hooks/record-usage.py"
+    chmod +x "$PROJ/.cursor/hooks/record-usage.py"
+  else
+    echo "  cp $HOOK_SCRIPT $PROJ/.cursor/hooks/record-usage.py"
+  fi
+fi
+
+HOOKS_JSON="$TEMPLATE/.cursor/hooks.json"
+if [[ ! -f "$HOOKS_JSON" ]]; then
+  HOOKS_JSON="$TEMPLATE/cursor-hooks/hooks.json"
+fi
+if [[ -f "$HOOKS_JSON" ]]; then
+  if [[ -f "$PROJ/.cursor/hooks.json" ]]; then
+    echo "hooks.json (merge)"
+    if [[ "$DRY" -eq 0 ]]; then
+      python3 - "$HOOKS_JSON" "$PROJ/.cursor/hooks.json" <<'PY'
+import json, sys
+from pathlib import Path
+src = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+dest_path = Path(sys.argv[2])
+try:
+    dest = json.loads(dest_path.read_text(encoding="utf-8"))
+except Exception:
+    dest = {"version": 1, "hooks": {}}
+hooks = dest.setdefault("hooks", {})
+for event, entries in (src.get("hooks") or {}).items():
+    existing = hooks.get(event) or []
+    cmds = {(e.get("command") if isinstance(e, dict) else None) for e in existing}
+    for e in entries:
+        if isinstance(e, dict) and e.get("command") not in cmds:
+            existing.append(e)
+    hooks[event] = existing
+dest_path.write_text(json.dumps(dest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+PY
+    else
+      echo "  merge $HOOKS_JSON → $PROJ/.cursor/hooks.json"
+    fi
+  else
+    echo "hooks.json (nuevo)"
+    do_run mkdir -p "$PROJ/.cursor"
+    do_run cp "$HOOKS_JSON" "$PROJ/.cursor/hooks.json"
+  fi
+fi
+
+# --- memory: solo carpetas que faltan ---
+echo "Memoria (solo lo que falta)"
+MEM_TPL="$TEMPLATE/memory"
+do_run mkdir -p "$PROJ/memory/processes"
+
+if [[ -d "$MEM_TPL/processes" ]]; then
+  for d in "$MEM_TPL/processes"/*; do
+    [[ -d "$d" ]] || continue
+    name="$(basename "$d")"
+    dest="$PROJ/memory/processes/$name"
+    if [[ ! -d "$dest" ]]; then
+      echo "  + processes/$name"
+      do_run cp -R "$d" "$dest"
+      if [[ "$DRY" -eq 0 ]]; then
+        find "$dest" -type f \( -name '*.json' -o -name '*.md' \) -print0 | while IFS= read -r -d '' f; do
+          replace_created_at "$f"
+        done
+      fi
+    fi
+  done
+fi
+
+if [[ -d "$MEM_TPL" ]]; then
+  for d in "$MEM_TPL"/*; do
+    [[ -d "$d" ]] || continue
+    name="$(basename "$d")"
+    [[ "$name" == "processes" ]] && continue
+    dest="$PROJ/memory/$name"
+    if [[ ! -d "$dest" ]]; then
+      echo "  + memory/$name"
+      do_run cp -R "$d" "$dest"
+      if [[ "$DRY" -eq 0 ]]; then
+        find "$dest" -type f \( -name '*.json' -o -name '*.md' \) -print0 | while IFS= read -r -d '' f; do
+          replace_created_at "$f"
+        done
+      fi
+    fi
+  done
+fi
+
+# --- director-state: activar procesos del kit, no borrar focus/history ---
+DS="$PROJ/memory/director-state.json"
+TPL_DS="$MEM_TPL/director-state.json"
+if [[ -f "$DS" && -f "$TPL_DS" ]]; then
+  echo "director-state.json (activar procesos del kit; no se pisa focus/history)"
+  if [[ "$DRY" -eq 0 ]]; then
+    python3 - "$DS" "$TPL_DS" "$CREATED_AT" <<'PY'
+import json, sys
+from pathlib import Path
+
+ds_path = Path(sys.argv[1])
+tpl_path = Path(sys.argv[2])
+now = sys.argv[3]
+ds = json.loads(ds_path.read_text(encoding="utf-8"))
+tpl = json.loads(tpl_path.read_text(encoding="utf-8"))
+procs = ds.setdefault("processes", {})
+for name, spec in (tpl.get("processes") or {}).items():
+    wanted = spec.get("availability") or "active"
+    if name not in procs:
+        procs[name] = {"availability": wanted, "status": spec.get("status") or "idle"}
+        continue
+    entry = procs[name] if isinstance(procs[name], dict) else {}
+    if entry.get("availability") == "planned" and wanted == "active":
+        entry["availability"] = "active"
+    entry.setdefault("status", "idle")
+    procs[name] = entry
+ds["updated_at"] = now
+ds_path.write_text(json.dumps(ds, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+PY
+  else
+    echo "  merge procesos active desde template → $DS"
+  fi
+fi
+
+echo ""
+echo "Listo. Kit v$KIT_VERSION aplicado a $PROJ"
+echo "No se modificó harness.project.yaml, memory de historias, ni .env."
+echo "En Cursor: Reload Window y escribí hola."
+echo "Commiteá skills/templates/schemas en el git del home."

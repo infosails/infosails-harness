@@ -17,4 +17,8 @@ outbox: memory/processes/discovery/outbox-to-orchestra.json
 
 internal_agents:
   - interviewer
+  - user-scout
+  - inventory-scout
+  - critic
   - scribe
+graph: .cursor/skills/discovery/graph.yaml

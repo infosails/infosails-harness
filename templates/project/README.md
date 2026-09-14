@@ -9,9 +9,13 @@ Lo que hay que construir/corregir vive en `memory/` (resultado de Discovery/Bug)
 - `memory/blueprints/` — historias (Feature Blueprints)
 - `memory/bugs/` — defectos
 - `memory/backlog.json` — cola
+- `memory/trackers/` — Linear (opt-in; proyección, no fuente de verdad)
+- `memory/costs/` — tokens por historia (hook Cursor `stop`)
+- `memory/deploys/` — informes de land en `main`
+- `memory/lessons/` — lecciones de calidad entre procesos
 - `memory/director-state.json` — estado de procesos (solo el Director)
 
-El Director activa fases y delega (Discovery → Design → …).
+El Director activa fases y delega (Discovery → Design → Build → Deploy). Deploy pushea `main` y publica con `vercel --prod`.
 
 ## Cómo trabajar
 

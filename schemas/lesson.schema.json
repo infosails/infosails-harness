@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://infosails.dev/schemas/lesson.schema.json",
+  "title": "Harness Lesson",
+  "description": "Lección de calidad persistida cuando un proceso rechaza el artefacto de uno anterior. Vive en memory/lessons/.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "id",
+    "at",
+    "from_process",
+    "to_process",
+    "symptom",
+    "summary",
+    "do",
+    "do_not"
+  ],
+  "properties": {
+    "version": { "type": "integer", "const": 1 },
+    "id": {
+      "type": "string",
+      "pattern": "^LSN-[0-9]{8}-[0-9]{3}$"
+    },
+    "at": { "type": "string", "format": "date-time" },
+    "from_process": {
+      "type": "string",
+      "enum": ["discovery", "bug", "design", "build", "onboard", "deploy"]
+    },
+    "to_process": {
+      "type": "string",
+      "enum": ["discovery", "bug", "design", "build", "onboard", "deploy"]
+    },
+    "symptom": { "type": "string" },
+    "artifact_id": { "type": ["string", "null"] },
+    "summary": { "type": "string" },
+    "do": { "type": "string" },
+    "do_not": { "type": "string" },
+    "markdown_path": { "type": ["string", "null"] }
+  }
+}

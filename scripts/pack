@@ -97,6 +97,10 @@ copy_templates() {
   fi
   mkdir -p "$dest/project/cursor-rules"
   cp "$HARNESS_HOME/templates/project/.cursor/rules/"*.mdc "$dest/project/cursor-rules/"
+  mkdir -p "$dest/project/cursor-hooks"
+  if [[ -f "$HARNESS_HOME/templates/project/.cursor/hooks.json" ]]; then
+    cp "$HARNESS_HOME/templates/project/.cursor/hooks.json" "$dest/project/cursor-hooks/hooks.json"
+  fi
 }
 
 # --- Runtime include list (ver config/pack.manifest) ---
@@ -110,7 +114,13 @@ copy_tree "$HARNESS_HOME/schemas" "$OUT_DIR/schemas"
 
 cp "$HARNESS_HOME/scripts/install" "$OUT_DIR/scripts/install"
 cp "$HARNESS_HOME/scripts/init-project" "$OUT_DIR/scripts/init-project"
-chmod +x "$OUT_DIR/scripts/install" "$OUT_DIR/scripts/init-project"
+cp "$HARNESS_HOME/scripts/update-project" "$OUT_DIR/scripts/update-project"
+cp "$HARNESS_HOME/scripts/record-usage" "$OUT_DIR/scripts/record-usage"
+chmod +x "$OUT_DIR/scripts/install" "$OUT_DIR/scripts/init-project" "$OUT_DIR/scripts/update-project" "$OUT_DIR/scripts/record-usage"
+if [[ -f "$HARNESS_HOME/scripts/linear-import" ]]; then
+  cp "$HARNESS_HOME/scripts/linear-import" "$OUT_DIR/scripts/linear-import"
+  chmod +x "$OUT_DIR/scripts/linear-import"
+fi
 
 # Manifest de lo excluido / incluido
 cp "$HARNESS_HOME/config/pack.manifest" "$OUT_DIR/config/pack.manifest" 2>/dev/null || true
@@ -141,6 +151,12 @@ infosails-init mi-app --path ~/Projects/mi-app
 infosails-init . --into ~/Projects/app-existente
 \`\`\`
 
+## Actualizar un proyecto que ya usa el harness
+
+\`\`\`bash
+infosails-update --path ~/Projects/app-existente
+\`\`\`
+
 Luego abrí el proyecto en Cursor y escribí \`hola\`.
 Para brownfield: opción **Onboard** (declará repos en \`harness.project.yaml\` si aplica).
 
@@ -154,6 +170,8 @@ Para brownfield: opción **Onboard** (declará repos en \`harness.project.yaml\`
 | \`schemas/\` | JSON Schema |
 | \`scripts/install\` | PATH + \`INFOSAILS_HARNESS_HOME\` |
 | \`scripts/init-project\` | \`infosails-init\` |
+| \`scripts/update-project\` | \`infosails-update\` |
+| \`scripts/record-usage\` | Hook de tokens (\`.cursor/hooks\`) |
 
 **No viene:** \`playground/\`, \`scripts/playground\`, \`phases/\` (docs del kit), rules del repo kit.
 EOF

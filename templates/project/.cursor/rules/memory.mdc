@@ -8,5 +8,9 @@ alwaysApply: false
 
 - Fuente de verdad de qué construir/corregir y del pipeline.
 - `director-state.json`: solo lo edita el Director.
-- Al crear/editar blueprints/bugs: actualizar `_index.json` y `backlog.json`; el Director actualiza `director-state` al cerrar el proceso.
+- `trackers/`: proyección Linear; la edita el Director (o `infosails-linear-import`). Un issue importado no es un blueprint.
+- `costs/`: tokens por turno (hook Cursor). `ledger.json` + `events.jsonl` son la historia de gasto.
+- Al crear/editar blueprints/bugs/designs/builds/deploys: actualizar `_index.json` y `backlog.json`; el Director actualiza `director-state` al cerrar el proceso.
+- `deploys/`: informes DR del Deploy Lead (SHA en `main` + URL Vercel prod).
+- `lessons/`: el Lead que bloquea por calidad aguas arriba (no la Orquesta).
 - Preferir status `Done`/`Blocked` antes de borrar ítems Ready.

@@ -16,3 +16,4 @@ writes:
   - memory/blueprints/
   - memory/backlog.json
   - memory/onboard/
+graph: .cursor/skills/onboard/graph.yaml

@@ -20,7 +20,7 @@
     "design": { "availability": "active", "status": "idle" },
     "build": { "availability": "active", "status": "idle" },
     "onboard": { "availability": "active", "status": "idle" },
-    "deploy": { "availability": "planned", "status": "idle" }
+    "deploy": { "availability": "active", "status": "idle" }
   },
   "history": []
 }

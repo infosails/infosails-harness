@@ -6,15 +6,45 @@
   "status": "idle",
   "current_agent": null,
   "agents": {
-    "surveyor": { "role": "Leer DS/BP e inventariar prerrequisitos (claves/accesos)", "status": "idle", "note": null },
-    "planner": { "role": "Work packages paralelizables", "status": "idle", "note": null },
-    "tdd-dev": { "role": "Red→Green→Refactor por WP (seguridad de comportamiento en Red si aplica)", "status": "idle", "note": null },
+    "surveyor": { "role": "Leer DS/BP, lecciones e inventariar prerrequisitos (claves/accesos)", "status": "idle", "note": null },
+    "planner": { "role": "Work packages con depends_on + writes", "status": "idle", "note": null },
+    "tdd-dev": { "role": "Red→Green→Refactor por WP (instancias tdd-dev:WP-*)", "status": "idle", "note": null },
     "coverage-gate": { "role": "Cobertura ≥85%", "status": "idle", "note": null },
+    "complexity-gate": { "role": "CCN McCabe ≤10 en funciones nuevas/tocadas", "status": "idle", "note": null },
     "sast": { "role": "SAST estático (Semgrep u stack); sin bloqueantes in-scope", "status": "idle", "note": null },
     "mutation": { "role": "Pruebas de mutación", "status": "idle", "note": null },
     "e2e": { "role": "Playwright + Gherkin del BP; pedir runtime si falta", "status": "idle", "note": null },
     "integrator": { "role": "Gates finales", "status": "idle", "note": null },
+    "critic": { "role": "TDD real + gates; no complete si Red fingido o DS hueco", "status": "idle", "note": null },
     "scribe": { "role": "Build Report + outbox", "status": "idle", "note": null }
+  },
+  "graph": {
+    "nodes": [
+      { "id": "surveyor", "role": "surveyor", "kind": "serial", "status": "idle", "writes": [] },
+      { "id": "planner", "role": "planner", "kind": "serial", "status": "idle", "writes": [] },
+      { "id": "coverage-gate", "role": "coverage-gate", "kind": "gate", "status": "idle", "writes": [] },
+      { "id": "complexity-gate", "role": "complexity-gate", "kind": "parallel", "status": "idle", "writes": [] },
+      { "id": "sast", "role": "sast", "kind": "parallel", "status": "idle", "writes": [] },
+      { "id": "mutation", "role": "mutation", "kind": "parallel", "status": "idle", "writes": [] },
+      { "id": "e2e", "role": "e2e", "kind": "parallel", "optional": true, "status": "idle", "writes": [] },
+      { "id": "integrator", "role": "integrator", "kind": "gate", "status": "idle", "writes": [] },
+      { "id": "critic", "role": "critic", "kind": "gate", "status": "idle", "writes": [] },
+      { "id": "scribe", "role": "scribe", "kind": "serial", "status": "idle", "writes": ["memory/builds/", "memory/backlog.json"] }
+    ],
+    "edges": [
+      { "from": "surveyor", "to": "planner" },
+      { "from": "planner", "to": "coverage-gate" },
+      { "from": "coverage-gate", "to": "sast" },
+      { "from": "coverage-gate", "to": "mutation" },
+      { "from": "coverage-gate", "to": "e2e" },
+      { "from": "coverage-gate", "to": "complexity-gate" },
+      { "from": "sast", "to": "integrator" },
+      { "from": "mutation", "to": "integrator" },
+      { "from": "e2e", "to": "integrator" },
+      { "from": "complexity-gate", "to": "integrator" },
+      { "from": "integrator", "to": "critic" },
+      { "from": "critic", "to": "scribe" }
+    ]
   },
   "working": {
     "design_package_id": null,
