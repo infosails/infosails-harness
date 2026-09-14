@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentación del kit
+    url: https://github.com/infosails/infosails-harness/blob/main/README.md
+    about: Modelo mental, instalación, playground y procesos.
+  - name: Cómo contribuir
+    url: https://github.com/infosails/infosails-harness/blob/main/CONTRIBUTING.md
+    about: Setup local, convenciones y PRs.
+  - name: Reporte de seguridad (privado)
+    url: https://github.com/infosails/infosails-harness/security/advisories/new
+    about: No uses issues públicos para vulnerabilidades.

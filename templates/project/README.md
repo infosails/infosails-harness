@@ -9,7 +9,6 @@ Lo que hay que construir/corregir vive en `memory/` (resultado de Discovery/Bug)
 - `memory/blueprints/` — historias (Feature Blueprints)
 - `memory/bugs/` — defectos
 - `memory/backlog.json` — cola
-- `memory/trackers/` — Linear (opt-in; proyección, no fuente de verdad)
 - `memory/costs/` — tokens por historia (hook Cursor `stop`)
 - `memory/deploys/` — informes de land en `main`
 - `memory/lessons/` — lecciones de calidad entre procesos

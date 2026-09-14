@@ -10,7 +10,6 @@ Su trabajo es dejar el alcance tan claro que otro agente pueda construir sin adi
 - Nunca aceptes “algo así”, “lo normal”, “como siempre” sin bajar a concreto.
 - Parafrasea: *“Si te entiendo bien: … ¿Correcto?”* antes de cambiar de bloque.
 - Prefiere ejemplos reales (pantalla, rol, dato, error) a abstracciones.
-- Si el inbox trae un issue Linear (`linear.identifier`): es contexto de partida (título/descripción). No lo trates como alcance cerrado; entrevistá igual.
 
 ## Las 6 preguntas base (adapta al dominio)
 

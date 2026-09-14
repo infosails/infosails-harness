@@ -7,30 +7,14 @@ usage() {
   cat <<'EOF'
 Uso:
   init-project <nombre> [--path <dir>] [--into <dir-existente>] [--no-git]
-              [--linear | --linear-import | --no-linear]
-              [--linear-team <KEY>] [--linear-project <nombre-o-id>]
 
 Ejemplos:
   init-project mi-app
   init-project mi-app --path ~/Projects/mi-app
   init-project . --into ~/Projects/app-existente   # adopta un repo ya creado
-  init-project mi-app --linear-import --linear-team ENG
-  init-project . --into ~/app --linear-import --linear-project "Core"
-
-Linear (opt-in):
-  --linear           Habilita tracker + MCP (no importa issues)
-  --linear-import    Igual y baja issues/proyectos a memory/trackers/ + backlog
-  --no-linear        No pregunta ni configura Linear
-  --linear-team      Key del team (ej. ENG)
-  --linear-project   Filtra issues a un proyecto Linear (nombre o id)
-
-  Importar y el sync diario requieren LINEAR_API_KEY (https://linear.app/settings/account/security).
-  El Director corre scripts/linear-import --sync-artifact (no pega la clave).
-  Historias ya en memory/ → issues + tareas: scripts/linear-import --push-memory --project "…"
 
 Variables:
   INFOSAILS_HARNESS_HOME  Fallback si el comando no vive dentro de un kit
-  LINEAR_API_KEY          Para --linear-import / prompt de import
 EOF
 }
 
@@ -83,9 +67,6 @@ NAME=""
 TARGET=""
 INTO=""
 NO_GIT=0
-LINEAR_MODE=""   # skip | enable | import | prompt
-LINEAR_TEAM=""
-LINEAR_PROJECT=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -93,11 +74,6 @@ while [[ $# -gt 0 ]]; do
     --path) TARGET="${2:-}"; shift 2 ;;
     --into) INTO="${2:-}"; shift 2 ;;
     --no-git) NO_GIT=1; shift ;;
-    --no-linear) LINEAR_MODE="skip"; shift ;;
-    --linear) LINEAR_MODE="enable"; shift ;;
-    --linear-import) LINEAR_MODE="import"; shift ;;
-    --linear-team) LINEAR_TEAM="${2:-}"; shift 2 ;;
-    --linear-project) LINEAR_PROJECT="${2:-}"; shift 2 ;;
     -*)
       echo "Opción desconocida: $1" >&2
       usage
@@ -168,7 +144,6 @@ cp "$HARNESS_HOME/schemas/build-report.schema.json" "$TARGET/schemas/build-repor
 cp "$HARNESS_HOME/schemas/deploy-report.schema.json" "$TARGET/schemas/deploy-report.schema.json"
 cp "$HARNESS_HOME/schemas/director-state.schema.json" "$TARGET/schemas/director-state.schema.json"
 cp "$HARNESS_HOME/schemas/process-lead-state.schema.json" "$TARGET/schemas/process-lead-state.schema.json"
-cp "$HARNESS_HOME/schemas/linear-tracker.schema.json" "$TARGET/schemas/linear-tracker.schema.json"
 cp "$HARNESS_HOME/schemas/backlog.schema.json" "$TARGET/schemas/backlog.schema.json"
 cp "$HARNESS_HOME/schemas/costs-ledger.schema.json" "$TARGET/schemas/costs-ledger.schema.json"
 
@@ -298,98 +273,6 @@ if [[ "$NO_GIT" -eq 0 ]]; then
   fi
 fi
 
-# --- Linear (opt-in): proyección a memory/trackers, no fuente de verdad ---
-if [[ -z "$LINEAR_MODE" ]]; then
-  if [[ -t 0 ]]; then
-    LINEAR_MODE="prompt"
-  else
-    LINEAR_MODE="skip"
-  fi
-fi
-
-if [[ "$LINEAR_MODE" == "prompt" ]]; then
-  echo ""
-  printf "¿Conectar este proyecto a Linear? [s/N] "
-  read -r _lin_ans || true
-  _lin_ans="$(printf '%s' "${_lin_ans:-}" | tr '[:upper:]' '[:lower:]')"
-  case "$_lin_ans" in
-    s|si|sí|y|yes)
-      LINEAR_MODE="enable"
-      printf "¿Importar issues y proyectos que ya existan? [S/n] "
-      read -r _imp_ans || true
-      _imp_ans="$(printf '%s' "${_imp_ans:-s}" | tr '[:upper:]' '[:lower:]')"
-      case "$_imp_ans" in
-        n|no) ;;
-        *) LINEAR_MODE="import" ;;
-      esac
-      if [[ -z "$LINEAR_TEAM" ]]; then
-        printf "Team key de Linear (ej. ENG; Enter lista teams si hay API key): "
-        read -r LINEAR_TEAM || true
-      fi
-      if [[ -z "$LINEAR_PROJECT" ]]; then
-        printf "¿Limitar a un proyecto Linear? nombre o id (Enter = todos): "
-        read -r LINEAR_PROJECT || true
-      fi
-      ;;
-    *) LINEAR_MODE="skip" ;;
-  esac
-fi
-
-run_linear_import() {
-  local importer="$HARNESS_HOME/scripts/linear-import"
-  if [[ ! -f "$importer" ]]; then
-    echo "Aviso: no encuentro scripts/linear-import en el kit; Linear no se configuró." >&2
-    return 0
-  fi
-  if ! command -v python3 >/dev/null 2>&1; then
-    echo "Aviso: python3 es necesario para Linear. Configuralo a mano o instalá python3." >&2
-    return 0
-  fi
-  chmod +x "$importer" 2>/dev/null || true
-
-  local extra=()
-  if [[ "$LINEAR_MODE" == "import" ]]; then
-    extra+=(--import)
-  else
-    extra+=(--enable-only)
-  fi
-  [[ -n "$LINEAR_TEAM" ]] && extra+=(--team-key "$LINEAR_TEAM")
-  [[ -n "$LINEAR_PROJECT" ]] && extra+=(--project "$LINEAR_PROJECT")
-
-  if [[ "$LINEAR_MODE" == "import" && -z "${LINEAR_API_KEY:-}" ]]; then
-    if [[ -t 0 ]]; then
-      echo "LINEAR_API_KEY no está en el entorno."
-      echo "Creala en https://linear.app/settings/account/security"
-      printf "Pegá la clave (no se muestra; se guarda en .env, gitignored): "
-      read -r -s LINEAR_API_KEY || true
-      echo ""
-      export LINEAR_API_KEY
-      extra+=(--write-env)
-    fi
-  elif [[ -n "${LINEAR_API_KEY:-}" ]]; then
-    extra+=(--write-env)
-  fi
-
-  if [[ "$LINEAR_MODE" == "import" && -z "${LINEAR_API_KEY:-}" ]]; then
-    echo "Sin LINEAR_API_KEY: habilito Linear + MCP, sin importar issues." >&2
-    extra=(--enable-only)
-    [[ -n "$LINEAR_TEAM" ]] && extra+=(--team-key "$LINEAR_TEAM")
-    [[ -n "$LINEAR_PROJECT" ]] && extra+=(--project "$LINEAR_PROJECT")
-  fi
-
-  echo ""
-  echo "Linear: configurando…"
-  python3 "$importer" --project-root "$TARGET" "${extra[@]}"
-}
-
-if [[ "$LINEAR_MODE" == "enable" || "$LINEAR_MODE" == "import" ]]; then
-  if [[ -z "$LINEAR_TEAM" && -t 0 ]]; then
-    printf "Team key de Linear (ej. ENG; Enter si la API puede listar teams): "
-    read -r LINEAR_TEAM || true
-  fi
-  run_linear_import
-fi
-
 cat <<EOF
 
 Listo. Proyecto instanciado.
@@ -397,7 +280,6 @@ Listo. Proyecto instanciado.
   cd "$TARGET"
   # Abre esta carpeta en Cursor y escribe: hola
   # Si el repo ya tenía código: elige Onboard para hidratar memory/
-  # Si habilitaste Linear: autenticá el MCP en Cursor (Settings → MCP)
 
 Memoria (historias) → $TARGET/memory/blueprints/
 Kit de origen       → $HARNESS_HOME

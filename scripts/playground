@@ -69,7 +69,6 @@ setup_skeleton() {
     [[ -d "$PLAY/memory/builds" ]] || cp -R "$TEMPLATE/memory/builds" "$PLAY/memory/builds"
     [[ -d "$PLAY/memory/onboard" ]] || cp -R "$TEMPLATE/memory/onboard" "$PLAY/memory/onboard"
     [[ -d "$PLAY/memory/deploys" ]] || cp -R "$TEMPLATE/memory/deploys" "$PLAY/memory/deploys"
-    [[ -d "$PLAY/memory/trackers" ]] || cp -R "$TEMPLATE/memory/trackers" "$PLAY/memory/trackers"
     [[ -d "$PLAY/memory/costs" ]] || cp -R "$TEMPLATE/memory/costs" "$PLAY/memory/costs"
     if [[ -d "$PLAY/memory/costs" ]]; then
       [[ -f "$PLAY/memory/costs/rates.json" ]] || cp "$TEMPLATE/memory/costs/rates.json" "$PLAY/memory/costs/rates.json"
@@ -139,7 +138,6 @@ PY
   link_or_copy "$HARNESS_HOME/schemas/deploy-report.schema.json" "$PLAY/schemas/deploy-report.schema.json"
   link_or_copy "$HARNESS_HOME/schemas/director-state.schema.json" "$PLAY/schemas/director-state.schema.json"
   link_or_copy "$HARNESS_HOME/schemas/process-lead-state.schema.json" "$PLAY/schemas/process-lead-state.schema.json"
-  link_or_copy "$HARNESS_HOME/schemas/linear-tracker.schema.json" "$PLAY/schemas/linear-tracker.schema.json"
   link_or_copy "$HARNESS_HOME/schemas/backlog.schema.json" "$PLAY/schemas/backlog.schema.json"
   link_or_copy "$HARNESS_HOME/schemas/costs-ledger.schema.json" "$PLAY/schemas/costs-ledger.schema.json"
 

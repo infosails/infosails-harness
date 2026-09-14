@@ -63,7 +63,7 @@ Leer BP + landscape + principios ([../design/architecture-principles.md](../desi
 - [ ] Hexagonal; microservicio solo con ADR
 - [ ] Nubes solo Vercel/GCP salvo ADR
 - [ ] Mermaid secuencia + componentes
-- [ ] UI: mapa a `@infosails/design-system` o `ui-designer` skipped con razón
+- [ ] UI: kit documentado + mapa a sus componentes, o `ui-designer` skipped con razón
 - [ ] Paths y contratos suficientes para Build
 - [ ] Cada escenario Gherkin del BP es **mapeable** (Dado/Cuando/Entonces con datos; no “el sistema funciona”)
 - [ ] Guardrails alineados al inventario del BP
@@ -106,7 +106,6 @@ Si el DS es impracticable (sin paths, sin contratos, UI sin mapa, Gherkin inejec
 - [ ] Landscape con evidencia (stack, repos, módulos, as-built)
 - [ ] BPs Done solo con rastro en código/docs; Core `YA_EXISTE`
 - [ ] No Design Packages ni Build Reports inventados
-- [ ] No issues Linear convertidos en BP Done
 - [ ] Informe ONBOARD lista qué se creó y qué quedó gap
 
 ## Deploy

@@ -45,11 +45,12 @@ Antes de `propose` un servicio nuevo:
 
 Si no → diseño hexagonal dentro del artefacto existente.
 
-## 5. UI — design system org
+## 5. UI — design system del producto
 
-- Default: **`@infosails/design-system`** (React + Tailwind v4 + tokens).
-- El agente `ui-designer` lee **`csf.md`**, **perfiles y tipo de app del BP**, y **pregunta sabores/características** (tema, acento, densidad, features, variantes) antes de diseñar.
-- Otra kit UI → solo con **ADR Accepted**.
+- **No hay kit UI obligatorio.** El producto elige (shadcn, MUI, InfoSails, custom, ninguno, …).
+- Resolver: landscape → `harness.project.yaml` → código existente → **preguntar**. Documentar la elección.
+- El agente `ui-designer` lee la **spec del kit elegido**, **perfiles y tipo de app del BP**, y **pregunta sabores/características** (tema, acento, densidad, features, variantes) antes de diseñar.
+- Cambiar de kit a mitad de producto → **ADR Accepted** (no mezclar dos sistemas en la misma UI).
 - Ver `.cursor/skills/design/ui-designer.md` y `config/harness.yaml` → `org.design_system`.
 
 ## 6. Diagramas Mermaid

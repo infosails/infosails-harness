@@ -1,0 +1,50 @@
+name: Mejora o feature
+description: Cambio al kit (skill, proceso, schema, script, docs).
+title: "feat: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Un issue por idea. Mantené el alcance en el **kit**, no en un producto instanciado.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problema o hueco
+      placeholder: Hoy no se puede… / el Lead se traba cuando…
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Propuesta
+      placeholder: Qué archivos o skills tocarías y qué no cambiaría (gates, jerarquía…).
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Área
+      options:
+        - Director / Orquesta
+        - Discovery
+        - Design
+        - Build
+        - Bug
+        - Onboard
+        - Deploy
+        - scripts
+        - schemas / templates
+        - docs
+        - otro
+    validations:
+      required: true
+  - type: checkboxes
+    id: constraints
+    attributes:
+      label: Respeto al modelo
+      options:
+        - label: La Orquesta no habla con agentes internos; solo con Leads (inbox/outbox).
+          required: true
+        - label: No afloja gates de Build sin discutirlo.
+          required: true

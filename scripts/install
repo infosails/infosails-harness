@@ -15,12 +15,7 @@ mkdir -p "$BIN_DIR"
 ln -sfn "$HARNESS_HOME/scripts/init-project" "$BIN_DIR/infosails-init"
 ln -sfn "$HARNESS_HOME/scripts/update-project" "$BIN_DIR/infosails-update"
 chmod +x "$HARNESS_HOME/scripts/init-project" "$HARNESS_HOME/scripts/update-project" "$BIN_DIR/infosails-init" "$BIN_DIR/infosails-update"
-if [[ -f "$HARNESS_HOME/scripts/linear-import" ]]; then
-  ln -sfn "$HARNESS_HOME/scripts/linear-import" "$BIN_DIR/infosails-linear-import"
-  chmod +x "$HARNESS_HOME/scripts/linear-import"
-else
-  rm -f "$BIN_DIR/infosails-linear-import"
-fi
+rm -f "$BIN_DIR/infosails-linear-import"
 
 SHELL_NAME="$(basename "${SHELL:-zsh}")"
 RC_FILE=""

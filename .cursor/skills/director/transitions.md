@@ -79,8 +79,5 @@ Tras `complete` de Discovery/Bug/Design/Build/Onboard/Deploy, el Director:
    - Discovery / Bug / Onboard: `derived_from: []` (raíz de linaje)
    Si el padre ya está en `artifacts`, no lo borres; el hijo apunta al padre.
 3. Asegura entrada en `memory/backlog.json` (Onboard: solo sync; BPs Done ya vienen del Lead; Deploy: `next_hint: null`)
-4. Si `trackers.linear.enabled`: proyección a Linear ([linear.md](linear.md)). Best-effort; no reviertas el `complete` si el script falla.
-5. Snapshot de tokens en `history[].usage` ([costs.md](costs.md))
-6. Propone la siguiente transición (Onboard → menú; sin delegate automático)
-
-Si el backlog tenía un ítem `type: linear_issue` reclamado para este artefacto, actualizalo al id `BP-…`/`BUG-…`, conservá el bloque `linear:`.
+4. Snapshot de tokens en `history[].usage` ([costs.md](costs.md))
+5. Propone la siguiente transición (Onboard → menú; sin delegate automático)

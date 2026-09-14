@@ -36,8 +36,7 @@ Proyecto **ya iniciado** (código + docs) → generar **toda** la memoria que fa
 | `memory/onboard/ONBOARD-….md` | Informe de seed (qué se creó) |
 
 **No** inventar Design Packages ni Build Reports con gates falsos.  
-**No** inventar bugs ni historias Ready salvo huecos evidentes y confirmados (ver abajo).  
-**No** convertir issues de `memory/trackers/linear.json` en BPs Done: son cola de tablero, no as-built de código. Onboard no llama a Linear.
+**No** inventar bugs ni historias Ready salvo huecos evidentes y confirmados (ver abajo).
 
 ## Arranque
 
@@ -161,7 +160,7 @@ El `synthesizer` fusiona módulos/capacidades cross-repo. Tras el draft: `critic
 
 ## Reglas de materialización (`scribe`)
 
-1. **Landscape** — rellenar resumen, stack, repos, módulos, integraciones, as-built, diagramas Mermaid mínimos. Marcar `maintainer` / changelog con nota `seeded by Onboard Lead`.
+1. **Landscape** — rellenar resumen, stack, repos, módulos, integraciones, as-built, diagramas Mermaid mínimos. Marcar `maintainer` / changelog con nota `seeded by Onboard Lead`. En stack **design system**: lo que haya en el código (`package.json`, `components.json`, Storybook); si no se ve, dejar vacío — Design pregunta. No asumir `@infosails/design-system`.
 2. **Blueprints Done** — una capacidad mayor = un BP:
    - ID `BP-{YYYYMMDD}-{SEQ}`
    - **Status:** `Done`

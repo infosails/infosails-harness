@@ -16,7 +16,6 @@ Guía: `.cursor/skills/_shared/lead-subagents.md` (grafo de ejecución; frontier
 - Diseño por historia: `memory/designs/`
 - Seed brownfield: `memory/onboard/`
 - Estado orquesta: `memory/director-state.json`
-- Tracker (opt-in): `memory/trackers/` — Linear es proyección, no fuente de verdad
 - Costos: `memory/costs/` — tokens por historia (hook; no editar a mano)
 - Lecciones: `memory/lessons/` — huecos de calidad entre procesos (escribe el Lead que bloquea)
 

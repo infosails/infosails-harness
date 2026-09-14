@@ -97,7 +97,7 @@ Un nodo `tdd-dev:<WP-id>` por paquete (`writes[]` de ese WP). En paralelo si el 
 2. **Green** — implementación mínima  
 3. **Refactor** — sin romper tests  
 
-Respetar guardrails del DS, nubes Vercel/GCP y mapa UI de **`@infosails/design-system`** (no otra kit).  
+Respetar guardrails del Design Package, nubes Vercel/GCP y el **mapa UI del kit elegido** (el del landscape/DS; no mezclar otro).  
 No saltar Red.
 
 **Aceptar el nodo** (crítico del WP, [critic.md](../_shared/critic.md)): el Lead mira `git diff` de `writes[]`. Sin `tdd.test_files` en el mismo cambio, sin `red_first`, o con asserts vacíos → no `done`. El reporte sigue `schemas/subagent-report.schema.json`. Coverage **no** sustituye esto.
@@ -198,7 +198,7 @@ DS impracticable → `blocked` + lección a Design. Fail interno → rewind al W
 - SAST = agente `sast` tras coverage, en paralelo con mutación/e2e/CCN ([sast.md](sast.md)).
 - Complejidad = agente `complexity-gate` tras coverage: CCN ≤ 10 en funciones nuevas/tocadas ([complexity.md](complexity.md)).
 - Respetar capas hexagonales del Design Package (domain / application / adapters).
-- Si el DS define UI: implementar con **`@infosails/design-system`** según el mapa del `ui-designer` (leer `csf.md` si hace falta); pedir `GITHUB_TOKEN` si no se puede instalar el paquete.
+- Si el Design Package define UI: implementar con el **kit documentado** (mapa del `ui-designer` + spec de ese kit). Pedir tokens de registry solo si ese paquete los necesita.
 - TDD siempre; cobertura ≥85%; CCN ≤10; mutación real; SAST real; paralelizar WPs según `depends_on`/`writes`.
 - No contradecir DS/ADRs.
 - No `complete` con gates rojos ni con `critic` distinto de `done`.

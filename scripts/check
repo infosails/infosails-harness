@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+# Comprobaciones locales y de CI: JSON, archivos de comunidad, bash -n.
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$ROOT"
+
+fail() {
+  echo "FAIL: $*" >&2
+  exit 1
+}
+
+command -v python3 >/dev/null || fail "hace falta python3"
+
+python3 - <<'PY'
+import json
+import pathlib
+import sys
+
+root = pathlib.Path(".")
+errors = 0
+
+def load_json(path: pathlib.Path) -> None:
+    global errors
+    try:
+        json.loads(path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        print(f"FAIL JSON {path}: {exc}", file=sys.stderr)
+        errors += 1
+
+for path in sorted((root / "schemas").glob("*.json")):
+    load_json(path)
+
+templates = root / "templates" / "project"
+if templates.is_dir():
+    for path in sorted(templates.rglob("*.json")):
+        load_json(path)
+
+if errors:
+    sys.exit(1)
+print(f"OK JSON ({len(list((root / 'schemas').glob('*.json')))} schemas)")
+PY
+
+HARNESS="$ROOT/config/harness.yaml"
+[[ -f "$HARNESS" ]] || fail "falta config/harness.yaml"
+VERSION="$(awk '/^version:/{ print $2; exit }' "$HARNESS")"
+[[ -n "$VERSION" ]] || fail "config/harness.yaml no tiene version"
+echo "OK harness.yaml version=$VERSION"
+
+for f in LICENSE NOTICE CODE_OF_CONDUCT.md CONTRIBUTING.md SECURITY.md CHANGELOG.md README.md; do
+  [[ -f "$ROOT/$f" ]] || fail "falta $f"
+done
+echo "OK archivos de comunidad"
+
+for script in "$ROOT"/scripts/*; do
+  [[ -f "$script" ]] || continue
+  [[ -x "$script" ]] || fail "no es ejecutable: $script"
+  shebang="$(head -n 1 "$script")"
+  case "$shebang" in
+    '#!'*bash*|'#!/bin/sh'*)
+      bash -n "$script" || fail "bash -n: $script"
+      ;;
+    '#!'*python*)
+      python3 -c "import ast, pathlib, sys; ast.parse(pathlib.Path(sys.argv[1]).read_text())" "$script" \
+        || fail "python: $script"
+      ;;
+    '#!'*)
+      ;;
+    *)
+      fail "sin shebang: $script"
+      ;;
+  esac
+done
+echo "OK scripts (sintaxis)"
+
+echo "check OK"

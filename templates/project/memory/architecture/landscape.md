@@ -12,11 +12,14 @@
 ## 2. Stack actual
 | Capa | Tecnología | Notas |
 |------|------------|-------|
-| Frontend | — | UI: `@infosails/design-system` (default org) |
+| Frontend | — | UI: kit a elegir (shadcn, MUI, InfoSails, custom, none) |
 | Backend | — | Puede vivir en Vercel y/o GCP |
 | Datos | — | Según servicio elegido (Vercel o GCP) |
-| Design system | `@infosails/design-system` | CSF: `csf.md` / `@infosails/design-system/csf` |
+| Design system | — (sin default) | Spec: CSF / Storybook / docs — completar en Design |
 | Infra / deploy | Vercel + GCP | Ver §3 |
+
+El **design system lo elige el producto** (Design pregunta si está vacío). Una vez documentado, las historias siguientes heredan. Cambiar de kit → ADR.
+
 
 ## 3. Infraestructura de trabajo
 <!-- Nubes permitidas: Vercel y GCP con toda su suite. Sin repartir front/back por nube. -->

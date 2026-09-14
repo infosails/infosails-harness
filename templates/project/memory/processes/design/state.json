@@ -8,7 +8,7 @@
   "agents": {
     "surveyor": { "role": "Leer landscape, as-built, infra, ADRs, BP y lecciones", "status": "idle", "note": null },
     "architect": { "role": "Proponer diseño técnico alineado a arquitectura existente", "status": "idle", "note": null },
-    "ui-designer": { "role": "UI con @infosails/design-system (csf.md); skip si no hay pantallas", "status": "idle", "note": null },
+    "ui-designer": { "role": "UI con el kit del producto (elegir / heredar); skip si no hay pantallas", "status": "idle", "note": null },
     "critic": { "role": "Checklist hexagonal / BP / paths (antes de scribe)", "status": "idle", "note": null },
     "scribe": { "role": "Escribir Design Package, ADRs y actualizar landscape si aplica", "status": "idle", "note": null }
   },

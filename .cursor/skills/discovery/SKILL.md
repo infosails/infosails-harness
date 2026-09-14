@@ -44,8 +44,6 @@ La Orquesta **no** conoce ni habla con tus agentes.
 Orquestación: frontier del grafo ([lead-subagents.md](../_shared/lead-subagents.md)).  
 `interviewer` (Lead) ∥ scouts. **Prohibido** `scribe` si `critic` no está `done`. Fallback: encarnar el frontier en serie.
 
-Si el inbox trae `linear.identifier` / descripción de un issue: es **contexto de partida**, no alcance cerrado. Entrevistá igual. No llames a Linear ni edites `memory/trackers/`.
-
 ## Entrevista (`interviewer`) — periodista
 
 Lee y sigue **[interview.md](interview.md)** completo.

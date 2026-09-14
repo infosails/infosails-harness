@@ -37,8 +37,6 @@ Usá `by_artifact[id].by_process[proceso]` si está; si no, `by_artifact[id].tot
 
 3. Decí al usuario esa cifra junto al `summary` del Lead.
 
-Si Linear está enabled, el script de sync copia el mismo total (y el desglose por proceso) al issue de la historia. No hace falta duplicarlo a mano.
-
 ## Tarifas
 
 El usuario completa `memory/costs/rates.json`. Ejemplo:

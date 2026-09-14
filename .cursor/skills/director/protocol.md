@@ -79,8 +79,6 @@ La Orquesta **tiene prohibido**:
 - Activar agentes internos
 - Editar `state.json` del proceso
 
-Si Linear está enabled, la Orquesta también edita `memory/trackers/` y sincroniza `backlog.json` (proyección). Los Leads no llaman a Linear.
-
 `memory/costs/` lo escribe el hook de Cursor (`stop`); la Orquesta solo lee.  
 `memory/lessons/` lo escriben los Leads (calidad); la Orquesta no lo lee ni lo edita.
 

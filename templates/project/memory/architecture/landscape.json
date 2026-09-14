@@ -12,6 +12,11 @@
     "frontend": null,
     "backend": null,
     "data": null,
+    "design_system": {
+      "package": null,
+      "spec": null,
+      "status": "unset"
+    },
     "infra": "Vercel + GCP"
   },
   "infrastructure": {

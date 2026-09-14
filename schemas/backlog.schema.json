@@ -18,14 +18,13 @@
           "id": { "type": "string" },
           "type": {
             "type": "string",
-            "enum": ["blueprint", "bug", "onboard", "linear_issue"]
+            "enum": ["blueprint", "bug", "onboard"]
           },
           "title": { "type": "string" },
           "path": { "type": ["string", "null"] },
           "status": {
             "type": "string",
             "enum": [
-              "imported",
               "ready",
               "in_progress",
               "blocked",
@@ -39,17 +38,7 @@
           },
           "note": { "type": ["string", "null"] },
           "created_at": { "type": ["string", "null"] },
-          "updated_at": { "type": ["string", "null"] },
-          "linear": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "identifier": { "type": "string" },
-              "issueId": { "type": "string" },
-              "url": { "type": ["string", "null"] },
-              "project": { "type": ["string", "null"] }
-            }
-          }
+          "updated_at": { "type": ["string", "null"] }
         }
       }
     }

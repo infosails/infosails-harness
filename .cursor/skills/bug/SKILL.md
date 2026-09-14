@@ -49,8 +49,6 @@ La Orquesta no conoce triager/scribe.
 
 Si es feature nueva → `blocked` o abortar con summary pidiendo Discovery Lead.
 
-Si el inbox trae un issue Linear (`linear.identifier`): usalo como síntoma inicial; triagá igual. No llames a Linear ni edites `memory/trackers/`.
-
 ## Scribe
 
 - ID `BUG-{YYYYMMDD}-{SEQ}`

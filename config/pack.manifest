@@ -14,6 +14,8 @@ include:
   - scripts/init-project
   - scripts/update-project
   - scripts/record-usage
+  - LICENSE
+  - NOTICE
   - README.md              # generado (runtime)
   - AGENTS.md              # generado (runtime)
   - config/runtime.json
@@ -34,3 +36,4 @@ notes: |
   Un proyecto real usa el runtime: install → infosails-init → memory en el proyecto.
   En el pack, las skills viven en skills/ (no .cursor/) para un layout portable;
   init-project acepta HARNESS_HOME/skills o HARNESS_HOME/.cursor/skills.
+  LICENSE y NOTICE viajan con el pack (Apache 2.0).

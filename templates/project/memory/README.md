@@ -17,7 +17,6 @@ Resultado de procesos + arquitectura + builds. El chat no es memoria.
 | `onboard/` | Informes de hidratación (Onboard) |
 | `deploys/` | Deploy Reports (producto + home en `main`) |
 | `lessons/` | Calidad rechazada aguas arriba (Lead que bloquea) |
-| `trackers/` | Proyección Linear (Orquesta; no es SoT) |
 | `costs/` | Tokens por turno (hook Cursor; la Orquesta lee) |
 
 ## Arquitectura vs diseño vs build

@@ -171,10 +171,17 @@
         },
         "skipped_reason": { "type": ["string", "null"] },
         "design_system_package": {
-          "type": "string",
-          "const": "@infosails/design-system"
+          "type": ["string", "null"],
+          "description": "Kit UI del producto (npm, shadcn/ui, custom, none). Null si ui_skipped o aún no elegido."
         },
-        "csf_read": { "type": "boolean" },
+        "spec_source": {
+          "type": ["string", "null"],
+          "description": "Dónde se leyó el catálogo: CSF, Storybook, docs URL o path en el repo"
+        },
+        "csf_read": {
+          "type": "boolean",
+          "description": "true si se leyó la spec del kit elegido (CSF / Storybook / docs)"
+        },
         "flavors": {
           "type": "object",
           "description": "Sabores y características del design system acordados con el usuario",
@@ -203,7 +210,7 @@
             },
             "source": {
               "type": "string",
-              "description": "usuario | landscape | default_org"
+              "description": "usuario | landscape | project_yaml | product_code | default_kit"
             }
           }
         },

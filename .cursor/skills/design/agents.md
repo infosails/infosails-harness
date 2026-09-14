@@ -8,7 +8,7 @@ Grafo: [graph.yaml](graph.yaml). Guía: [../_shared/lead-subagents.md](../_share
 |----|-----|------|
 | `surveyor` | Landscape, as-built, infra, ADRs, BP, **lecciones** | serial |
 | `architect` | Diseño app + infra + repos + Mermaid | parallel |
-| `ui-designer` | UI/UX + design system; skip si no hay UI | parallel (optional) |
+| `ui-designer` | UI/UX + kit del producto (elegir / heredar); skip si no hay UI | parallel (optional) |
 | `critic` | Hexagonal / BP / paths / Gherkin mapeable / UI mapa | gate |
 | `scribe` | DS + landscape/as-built/infra/repos/ADRs; crear repos si aplica | serial |
 

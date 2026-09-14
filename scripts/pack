@@ -117,10 +117,10 @@ cp "$HARNESS_HOME/scripts/init-project" "$OUT_DIR/scripts/init-project"
 cp "$HARNESS_HOME/scripts/update-project" "$OUT_DIR/scripts/update-project"
 cp "$HARNESS_HOME/scripts/record-usage" "$OUT_DIR/scripts/record-usage"
 chmod +x "$OUT_DIR/scripts/install" "$OUT_DIR/scripts/init-project" "$OUT_DIR/scripts/update-project" "$OUT_DIR/scripts/record-usage"
-if [[ -f "$HARNESS_HOME/scripts/linear-import" ]]; then
-  cp "$HARNESS_HOME/scripts/linear-import" "$OUT_DIR/scripts/linear-import"
-  chmod +x "$OUT_DIR/scripts/linear-import"
-fi
+
+# Licencia (el runtime se redistribuye bajo Apache 2.0)
+cp "$HARNESS_HOME/LICENSE" "$OUT_DIR/LICENSE"
+cp "$HARNESS_HOME/NOTICE" "$OUT_DIR/NOTICE"
 
 # Manifest de lo excluido / incluido
 cp "$HARNESS_HOME/config/pack.manifest" "$OUT_DIR/config/pack.manifest" 2>/dev/null || true
@@ -172,8 +172,11 @@ Para brownfield: opción **Onboard** (declará repos en \`harness.project.yaml\`
 | \`scripts/init-project\` | \`infosails-init\` |
 | \`scripts/update-project\` | \`infosails-update\` |
 | \`scripts/record-usage\` | Hook de tokens (\`.cursor/hooks\`) |
+| \`LICENSE\` / \`NOTICE\` | Apache 2.0 |
 
 **No viene:** \`playground/\`, \`scripts/playground\`, \`phases/\` (docs del kit), rules del repo kit.
+
+Licencia: Apache License 2.0 (ver \`LICENSE\`). Marca InfoSails: ver \`NOTICE\`.
 EOF
 
 cat > "$OUT_DIR/AGENTS.md" <<'EOF'

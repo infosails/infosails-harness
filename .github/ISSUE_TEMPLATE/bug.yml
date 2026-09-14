@@ -1,0 +1,68 @@
+name: Bug
+description: Algo no funciona en el kit (skills, scripts, pack, playground).
+title: "fix: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Gracias. No pegues secretos, `.env` ni tokens.
+        Si es una vulnerabilidad, usá un [Security Advisory](https://github.com/infosails/infosails-harness/security/advisories/new).
+  - type: textarea
+    id: what
+    attributes:
+      label: Qué pasa
+      placeholder: El script X falla / el Lead Y no escribe el outbox / pack omite un archivo…
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Qué esperabas
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Cómo reproducirlo
+      placeholder: |
+        1. ./scripts/playground
+        2. …
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Versión del kit
+      description: "`config/harness.yaml` → `version`"
+      placeholder: "0.14.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Área
+      options:
+        - Director / Orquesta
+        - Discovery
+        - Design
+        - Build
+        - Bug
+        - Onboard
+        - Deploy
+        - scripts (install / init / update / pack / playground)
+        - schemas / templates
+        - docs
+        - otro
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: SO y shell
+      placeholder: macOS 15, zsh
+  - type: textarea
+    id: extra
+    attributes:
+      label: Extra
+      description: Logs recortados, archivos tocados, link a PR.

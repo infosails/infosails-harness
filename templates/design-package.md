@@ -52,46 +52,47 @@ flowchart TB
 * Ownership:
 
 ### 3.5 UI / flujos (agente `ui-designer`)
-<!-- Obligatorio si hay pantallas. Fuente: @infosails/design-system + csf.md -->
+<!-- Obligatorio si hay pantallas. Kit = el del producto (landscape / YAML / código / pregunta). -->
 
-* **Design system:** `@infosails/design-system` (default org)
-* **CSF leído:** sí | no (bloqueado: falta token/paquete) | n/a (sin UI)
+* **Design system:** (paquete o nombre; p. ej. shadcn/ui, MUI, `@infosails/design-system`, custom, none)
+* **Spec leída:** sí | no (bloqueado: falta acceso) | n/a (sin UI) — CSF / Storybook / docs / path:
 * **Veredicto UI:** designed | ui_skipped
-* Razón si skipped:
+* **Razón si skipped:**
 * **Perfil primario (BP):** 
 * **Tipo de aplicación (BP):** 
 
 #### Sabores / características (preguntar al usuario; no asumir)
-| Decisión | Valor | Origen (usuario / landscape / default org / BP) |
-|----------|-------|--------------------------------------------------|
+| Decisión | Valor | Origen (usuario / landscape / YAML / código / BP) |
+|----------|-------|-----------------------------------------------------|
+| Kit / paquete | | |
+| Spec (CSF / Storybook / docs) | | |
 | Perfil / audiencia | | blueprint |
 | Tipo de app | | blueprint |
 | Tema default | light \| dark \| system | |
 | Toggle de tema en producto | sí / no | |
-| Acento / tokens de marca | sail \| horizon \| void \| solo semánticos \| … | |
+| Acento / tokens de marca | | |
 | Densidad | densa \| media \| aireada | perfil + tipo app |
-| Features DS activas | ThemeProvider, tokens TS, utilities, … | |
-| Variantes clave (csf) | Button: … / Card: … / Badge: … | |
+| Features del kit | | |
+| Variantes clave | Button: … / Card: … | |
 | Excluido a propósito | | |
 
-#### Instalación / wiring (si aplica)
-* [ ] `.npmrc` GitHub Packages + `GITHUB_TOKEN`
-* [ ] dependencia `@infosails/design-system`
-* [ ] imports CSS (tokens, theme, utilities) + Tailwind v4
-* [ ] `ThemeProvider` / `data-theme` (según matriz)
-* [ ] Next: `transpilePackages: ['@infosails/design-system']`
+#### Instalación / wiring (si aplica — según el kit)
+* [ ] deps / CLI del kit elegido
+* [ ] CSS / tokens / provider
+* [ ] Next `transpilePackages` u otra config **solo si el kit lo pide**
+* [ ] Token de registry **solo si el paquete es privado** (p. ej. GitHub Packages)
 
-#### Mapa de pantallas → componentes DS
-| Pantalla / flujo | Perfil | Ruta o nombre | Componentes (`csf.md`) | Variantes / sabor | Estados (loading/vacío/error) |
-|------------------|--------|---------------|------------------------|-------------------|-------------------------------|
+#### Mapa de pantallas → componentes del kit
+| Pantalla / flujo | Perfil | Ruta o nombre | Componentes (spec) | Variantes / sabor | Estados (loading/vacío/error) |
+|------------------|--------|---------------|--------------------|-------------------|-------------------------------|
 | | | | | | |
 
 #### Layout y jerarquía
 * 
 
 #### Guardrails UI
-* **NO** usar otra librería UI (Material, Chakra, shadcn suelto, …) sin ADR
-* **NO** inventar componentes que ya existan en el DS
+* **NO** mezclar otro kit UI en esta historia (cambiar de kit = ADR)
+* **NO** inventar componentes que ya existan en la spec
 * **NO** 
 
 ### 3.6 Secuencia / flujo técnico (Mermaid)

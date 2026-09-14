@@ -36,15 +36,12 @@ memory:
   backlog: memory/backlog.json
   blueprints: memory/blueprints
   bugs: memory/bugs
-  trackers: memory/trackers
   costs: memory/costs
   director_state: memory/director-state.json
   rule: |
     Si no está en memory/, no cuenta como trabajo de este proyecto.
     El chat no es memoria.
-    Linear (si está enabled) es proyección del tablero, no fuente de verdad.
-    Solo el Director edita director-state.json (estado de procesos y handoffs)
-    y memory/trackers/ (índice de proyección).
+    Solo el Director edita director-state.json (estado de procesos y handoffs).
     memory/costs/ lo escribe el hook de Cursor (tokens por turno).
     memory/lessons/ lo escribe el Lead que bloquea por calidad aguas arriba.
 
@@ -52,24 +49,18 @@ memory:
 costs:
   enabled: true
 
-# Tracker de equipo (opt-in). No sustituye memory/.
-# enabled: false → el harness se comporta como siempre.
-# intake_label: issues con esta etiqueta pueden entrar al menú de la Orquesta.
-trackers:
-  linear:
-    enabled: false
-    team_id: null
-    team_key: null
-    project_id: null
-    project_name: null
-    intake_label: "Ready for Discovery"
-    write_on_complete: true
-
 orchestrator:
   agent: director
   state_file: memory/director-state.json
+
+# UI kit del producto (opt-in). Si está vacío, Design pregunta y lo escribe en landscape.
+# Ejemplos: shadcn/ui, @mui/material, @infosails/design-system, custom, none
+design_system:
+  package: null
+  spec: null   # path o URL: CSF, Storybook, docs
 
 # De dónde se copiaron skills/templates al instanciar (referencia)
 kit:
   source: "{{HARNESS_HOME}}"
   synced_at: "{{CREATED_AT}}"
+

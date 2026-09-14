@@ -4,6 +4,8 @@
 name: infosails-harness
 kind: kit
 version: 0.14.0
+license: Apache-2.0
+homepage: https://github.com/infosails/infosails-harness
 description: Kit instalable para desarrollo basado en agentes
 
 model:
@@ -43,7 +45,6 @@ orchestrator:
   owns_state: true
   speaks_to: leads_only
   protocol: .cursor/skills/director/protocol.md
-  linear: .cursor/skills/director/linear.md
   costs: .cursor/skills/director/costs.md
   first_action: read_state_then_menu_or_resume
   playground:
@@ -188,7 +189,6 @@ memory:
   onboard: memory/onboard
   deploys: memory/deploys
   lessons: memory/lessons
-  trackers: memory/trackers
   costs: memory/costs
   architecture: memory/architecture
   landscape: memory/architecture/landscape.md
@@ -203,7 +203,6 @@ memory:
     onboard/: Onboard Lead (informe de seed).
     deploys/: Deploy Lead (git main + vercel --prod; home versiona memory/).
     lessons/: Lead que bloquea por calidad aguas arriba. La Orquesta no edita.
-    trackers/: Orquesta (proyección Linear). No es fuente de verdad.
     costs/: hook Cursor (stop); la Orquesta solo lee.
 
 # Nubes de la organización (Design debe respetar)
@@ -225,17 +224,21 @@ org:
       Microservicios solo si es absolutamente necesario, con ADR Accepted.
       Ver .cursor/skills/design/architecture-principles.md
   design_system:
-    package: "@infosails/design-system"
-    registry: https://npm.pkg.github.com
-    csf: "@infosails/design-system/csf"
-    csf_path_after_install: node_modules/@infosails/design-system/dist/csf.md
-    stack: [react, tailwindcss_v4]
-    auth_env: GITHUB_TOKEN
+    default: null
+    resolve_order: [landscape, project_yaml, product_code, ask_user]
+    examples:
+      - shadcn/ui
+      - "@mui/material"
+      - "@infosails/design-system"
+      - custom
+      - none
     policy: |
-      UI de producto usa @infosails/design-system por defecto.
-      El agente ui-designer lee csf.md y pregunta sabores/características
-      (tema, acento, densidad, features, variantes) antes de proponer pantallas.
-      Otra librería UI requiere ADR Accepted de excepción.
+      El harness no impone kit UI. El producto elige (shadcn, MUI, InfoSails,
+      custom, ninguno, u otro).
+      Resolver: landscape → harness.project.yaml → código existente → preguntar.
+      Documentar en landscape. Cambiar de kit a mitad de producto = ADR.
+      El ui-designer lee la spec del kit elegido (CSF, Storybook, docs);
+      no inventa catálogo ni asume @infosails/design-system.
       Ver .cursor/skills/design/ui-designer.md
 
 lifecycle:
@@ -296,7 +299,6 @@ paths:
   schema: schemas/feature-blueprint.schema.json
   design_schema: schemas/design-package.schema.json
   director_state_schema: schemas/director-state.schema.json
-  linear_tracker_schema: schemas/linear-tracker.schema.json
   backlog_schema: schemas/backlog.schema.json
   costs_ledger_schema: schemas/costs-ledger.schema.json
   deploy_report_schema: schemas/deploy-report.schema.json

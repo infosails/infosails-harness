@@ -18,7 +18,6 @@ Guía: `.cursor/skills/_shared/lead-subagents.md` y `graph.md`.
 | `memory/onboard/` | Informes de seed (Onboard) |
 | `memory/deploys/` | Deploy Reports (SHA en `main`) |
 | `memory/lessons/` | Calidad rechazada aguas arriba (LSN-…) |
-| `memory/trackers/` | Proyección Linear (opt-in; no es SoT) |
 | `memory/costs/` | Tokens por historia (hook Cursor) |
 | `memory/processes/` | Estado/inbox/outbox por Lead |
 
