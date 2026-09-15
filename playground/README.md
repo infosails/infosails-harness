@@ -13,9 +13,9 @@ Desde la raíz del kit:
 ./scripts/playground --status
 ```
 
-Un refresh copia YAML, rules, hooks de tokens, carpeta `memory/costs` si falta, y re-enlaza skills/schemas. **No** toca `.env`. **Sí** pisa `harness.project.yaml` con el template.
+Un refresh copia YAML, rules, hooks de tokens, carpeta `memory/costs` si falta, y re-enlaza skills/schemas. **No** toca `.env`. **Sí** sobrescribe `harness.project.yaml` con el template.
 
-No uses `--reset` si querés conservar blueprints/bugs. Para limpio pero con BPs: `--reset-keep-blueprints`.
+No uses `--reset` si quieres conservar blueprints/bugs. Para limpio pero con BPs: `--reset-keep-blueprints`.
 
 ## Probar en Cursor
 
@@ -30,7 +30,7 @@ Deploy pushea `main` (producto; el home del kit no) y corre `vercel --prod` si e
 
 Los skills son **symlink** a `.cursor/skills/` del kit: editas un skill y lo pruebas al momento.
 
-Los hooks de tokens del **kit** (`.cursor/hooks.json` → `scripts/record-usage`) ya apuntan al playground cuando el workspace es el repo del kit. También hay copia en `playground/.cursor/hooks.json` por si abrís esa carpeta sola.
+Los hooks de tokens del **kit** (`.cursor/hooks.json` → `scripts/record-usage`) ya apuntan al playground cuando el workspace es el repo del kit. También hay copia en `playground/.cursor/hooks.json` por si abres esa carpeta sola.
 
 ## Costos
 

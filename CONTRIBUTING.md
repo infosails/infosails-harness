@@ -2,12 +2,12 @@
 
 Gracias por querer mejorar el InfoSails Harness. Este repo es el **kit** (skills, templates, schemas, scripts). La memoria de un producto no vive aquí: vive en cada proyecto (`infosails-init`) o en `playground/` para pruebas locales.
 
-Al enviar un PR aceptás que tu aporte se publica bajo la [Apache License 2.0](LICENSE), sin términos extra. El Código de conducta es [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
+Al enviar un PR aceptas que tu aporte se publica bajo la [Apache License 2.0](LICENSE), sin términos extra. El Código de conducta es [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
 
 ## Antes de codear
 
-1. Abrí un [issue](https://github.com/infosails/infosails-harness/issues) (bug, idea o duda) salvo que el cambio sea trivial (typo, docs).
-2. Mantené el alcance chico: un tema por PR.
+1. Abre un [issue](https://github.com/infosails/infosails-harness/issues) (bug, idea o duda) salvo que el cambio sea trivial (typo, docs).
+2. Mantén el alcance chico: un tema por PR.
 3. No subas secretos, `.env`, tokens, ni `playground/` (está gitignored a propósito).
 
 ## Requisitos
@@ -53,11 +53,11 @@ No commitees `dist/`, `playground/` (salvo `playground/README.md`) ni `.env`.
 | Install / init / update | `scripts/` |
 | Docs de fase (no van al pack) | `phases/` |
 
-Subí la versión en `config/harness.yaml` solo cuando el cambio sea un release del kit (el maintainer suele hacerlo). Anotá el cambio en [CHANGELOG.md](CHANGELOG.md) bajo **Unreleased**.
+Sube la versión en `config/harness.yaml` solo cuando el cambio sea un release del kit (el maintainer suele hacerlo). Anota el cambio en [CHANGELOG.md](CHANGELOG.md) bajo **Unreleased**.
 
 ## Convenciones
 
-- Docs y skills en **español**, mismo tono que el README.
+- Docs y skills en **español neutro** (tú; sin voseo), mismo tono que el README.
 - No emojis en docs ni skills.
 - Skills: el Lead habla con la Orquesta por inbox/outbox; la Orquesta no lanza agentes internos.
 - No aflojes gates de Build (TDD, cov, CCN, mutación, SAST, e2e) sin discusión en el issue.
@@ -67,15 +67,15 @@ Subí la versión en `config/harness.yaml` solo cuando el cambio sea un release 
 
 1. Branch desde `main`: `feat/…`, `fix/…`, `docs/…`.
 2. `./scripts/check` en verde.
-3. Si tocás pack/install/init/update, probá `./scripts/pack --no-archive` y, si aplica, `./scripts/playground`.
-4. Completá la plantilla del PR: qué, por qué, cómo se probó.
+3. Si tocas pack/install/init/update, prueba `./scripts/pack --no-archive` y, si aplica, `./scripts/playground`.
+4. Completa la plantilla del PR: qué, por qué, cómo se probó.
 5. Un PR no debe incluir `playground/memory`, lockfiles ajenos, ni reformateos masivos sin relación.
 
 Los maintainers revisan jerarquía Orquesta ↔ Lead, schemas y que el pack no se hinche (el playground no va al runtime).
 
 ## Issues
 
-Usá las plantillas de GitHub. En bugs: pasos, resultado esperado, resultado real, versión del kit (`config/harness.yaml`). No pegues tokens ni dumps de `.env`.
+Usa las plantillas de GitHub. En bugs: pasos, resultado esperado, resultado real, versión del kit (`config/harness.yaml`). No pegues tokens ni dumps de `.env`.
 
 ## Seguridad
 
@@ -83,4 +83,4 @@ Vulnerabilidades: [SECURITY.md](SECURITY.md). No las abras como issue público.
 
 ## Licencia y marca
 
-El código es Apache 2.0. **InfoSails** es marca: podés atribuir el origen; no uses el nombre ni logos para insinuar que InfoSails respalda tu fork sin permiso. Detalle en [NOTICE](NOTICE).
+El código es Apache 2.0. **InfoSails** es marca: puedes atribuir el origen; no uses el nombre ni logos para insinuar que InfoSails respalda tu fork sin permiso. Detalle en [NOTICE](NOTICE).

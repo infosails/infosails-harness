@@ -125,7 +125,7 @@ cp -R "$TEMPLATE/memory" "$TARGET/memory"
 cp "$TEMPLATE/AGENTS.md" "$TARGET/AGENTS.md"
 cp "$TEMPLATE/harness.project.yaml" "$TARGET/harness.project.yaml"
 
-# README: no pisar uno existente al adoptar
+# README: no sobrescribir uno existente al adoptar
 if [[ ! -f "$TARGET/README.md" ]]; then
   cp "$TEMPLATE/README.md" "$TARGET/README.md"
 fi

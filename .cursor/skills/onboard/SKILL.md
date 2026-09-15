@@ -66,7 +66,7 @@ Fuente de verdad, en este orden:
 ¿Qué repositorios componen este producto?
 
 Para cada uno: id, path (local) y rol (app | api | packages | infra | docs | other).
-Si es un solo repo (este directorio), decí «solo este» o «mono».
+Si es un solo repo (este directorio), di «solo este» o «mono».
 
 Ejemplo:
 - web → . (app)

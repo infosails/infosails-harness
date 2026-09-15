@@ -8,6 +8,7 @@ La versión canónica está en `config/harness.yaml`.
 - UI: el producto elige design system (landscape / `harness.project.yaml` / código / pregunta). `@infosails/design-system` es una opción, no un lock-in.
 - Se elimina Linear (tracker, import, MCP, `memory/trackers/`, flags de `infosails-init`).
 - README: guía de uso del ecosistema (quick start, frases, primera historia, troubleshooting) antes de la referencia del kit.
+- Textos del kit en español neutro (tú; sin voseo rioplatense).
 
 ## [0.14.0] - 2026-09-14
 

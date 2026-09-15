@@ -54,7 +54,7 @@ Lee: <lista>
 Escribe solo: <node.writes o "devolver texto al Lead sin persistir">
 Objetivo: <una frase>
 Criterio de done: <checklist corta>
-Al terminar devolvé JSON version=1 node_id role status summary
+Al terminar devuelve JSON version=1 node_id role status summary
   + paths_touched + blockers
   + si role=tdd-dev: tdd.{test_files, prod_files, red_first, business_asserts}
   + si role=critic: critic.{verdict, checklist, gap, upstream_process}

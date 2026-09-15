@@ -157,8 +157,8 @@ infosails-init . --into ~/Projects/app-existente
 infosails-update --path ~/Projects/app-existente
 \`\`\`
 
-Luego abrí el proyecto en Cursor y escribí \`hola\`.
-Para brownfield: opción **Onboard** (declará repos en \`harness.project.yaml\` si aplica).
+Luego abre el proyecto en Cursor y escribe \`hola\`.
+Para brownfield: opción **Onboard** (declara repos en \`harness.project.yaml\` si aplica).
 
 ## Contenido
 
@@ -219,5 +219,5 @@ if [[ "$INSTALL_AFTER" -eq 1 ]]; then
 fi
 
 echo ""
-echo "Para trabajar en un proyecto: instalá este pack (o apuntá INFOSAILS_HARNESS_HOME a él)."
+echo "Para trabajar en un proyecto: instala este pack (o apunta INFOSAILS_HARNESS_HOME a él)."
 echo "El playground solo vive en el repo de desarrollo del kit."

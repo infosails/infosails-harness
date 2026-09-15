@@ -77,10 +77,10 @@ Instalación del kit OK.
   Actualizar proyecto:     infosails-update
   Symlink:                 $BIN_DIR/infosails-init → $HARNESS_HOME/scripts/init-project
 
-Recarga la shell (importante si actualizás de versión):
+Recarga la shell (importante si actualizas de versión):
 
   source $RC_FILE
-  # o abrí una terminal nueva
+  # o abre una terminal nueva
 
 Luego crea o adopta un proyecto:
 

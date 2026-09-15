@@ -335,5 +335,5 @@ fi
 echo ""
 echo "Listo. Kit v$KIT_VERSION aplicado a $PROJ"
 echo "No se modificó harness.project.yaml, memory de historias, ni .env."
-echo "En Cursor: Reload Window y escribí hola."
-echo "Commiteá skills/templates/schemas en el git del home."
+echo "En Cursor: Reload Window y escribe hola."
+echo "Haz commit de skills/templates/schemas en el git del home."

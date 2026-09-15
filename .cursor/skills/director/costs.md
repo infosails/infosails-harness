@@ -6,22 +6,22 @@ Cursor no expone la factura por historia. El hook `stop` / `subagentStop` sí ma
 - **USD:** estimación opcional con `memory/costs/rates.json` (USD por 1M tokens). `null` = no inventar dinero.
 - **Factura real:** dashboard de Cursor. El ledger es consumo atribuido al producto, no el cobro.
 
-No edites `memory/costs/` (lo escribe `scripts/record-usage`). Solo leé.
+No edites `memory/costs/` (lo escribe `scripts/record-usage`). Solo lee.
 
 ## Al arrancar / menú / ver estado
 
-Leé `memory/costs/ledger.json` si existe. En el resumen, una línea:
+Lee `memory/costs/ledger.json` si existe. En el resumen, una línea:
 
 ```text
 Costo proyecto: in=… out=… cache_r=… (~US$ … o “sin tarifa”)
 ```
 
-Si hay focus, agregá el total de ese artefacto y el desglose `by_process` (discovery / design / build / bug / onboard).
+Si hay focus, agrega el total de ese artefacto y el desglose `by_process` (discovery / design / build / bug / onboard).
 
 ## Tras `complete`
 
 1. El hook puede atribuir tarde: el ledger se recalcula desde `events.jsonl`.
-2. En el `history` de `director-state`, en el evento `complete`, copiá un snapshot:
+2. En el `history` de `director-state`, en el evento `complete`, copia un snapshot:
 
 ```json
 "usage": {
@@ -33,9 +33,9 @@ Si hay focus, agregá el total de ese artefacto y el desglose `by_process` (disc
 }
 ```
 
-Usá `by_artifact[id].by_process[proceso]` si está; si no, `by_artifact[id].totals`.
+Usa `by_artifact[id].by_process[proceso]` si está; si no, `by_artifact[id].totals`.
 
-3. Decí al usuario esa cifra junto al `summary` del Lead.
+3. Di al usuario esa cifra junto al `summary` del Lead.
 
 ## Tarifas
 

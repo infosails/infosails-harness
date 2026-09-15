@@ -5,7 +5,7 @@
 
 Kit **open source** (Apache 2.0) para **desarrollo agéntico** en [Cursor](https://cursor.com): el producto avanza por agentes (Discovery → Design → Build → Deploy), no por coding manual como camino principal.
 
-Vos hablás con un solo agente — el **Director de Orquesta**. Él activa Leads. Los Leads escriben **memoria** (`memory/`) que es la fuente de verdad. El chat se olvida; los blueprints, designs y deploys no.
+Tú hablas con un solo agente — el **Director de Orquesta**. Él activa Leads. Los Leads escriben **memoria** (`memory/`) que es la fuente de verdad. El chat se olvida; los blueprints, designs y deploys no.
 
 Este repositorio es el **kit** (skills, templates, scripts). La memoria de *tu* producto no vive aquí: vive en el proyecto (`infosails-init`) o en `playground/` para probar el harness.
 
@@ -13,7 +13,7 @@ Este repositorio es el **kit** (skills, templates, scripts). La memoria de *tu* 
 |--|--|
 | Versión kit | `config/harness.yaml` → `version` |
 | Licencia | [Apache License 2.0](LICENSE) |
-| Hablarle | Abrí el **home** en Cursor → `hola` |
+| Hablarle | Abre el **home** en Cursor → `hola` |
 | Instalar | `./scripts/install` → `infosails-init` / `infosails-update` |
 | Probar sin otro repo | `./scripts/playground` |
 | Contribuir | [CONTRIBUTING.md](CONTRIBUTING.md) |
@@ -30,7 +30,7 @@ Este repositorio es el **kit** (skills, templates, scripts). La memoria de *tu* 
 - [Cómo hablarle](#cómo-hablarle)
 - [Primera historia](#primera-historia)
 - [Proyecto que ya tiene código](#proyecto-que-ya-tiene-código)
-- [Qué decidís vos](#qué-decidís-vos)
+- [Qué decides tú](#qué-decides-tú)
 - [Si algo se traba](#si-algo-se-traba)
 
 **Referencia del kit**
@@ -59,7 +59,7 @@ Este repositorio es el **kit** (skills, templates, scripts). La memoria de *tu* 
 
 Sirve si:
 
-- Ya laburás (o querés laburar) en **Cursor** y preferís que un pipeline de agentes cierre alcance, diseño, código y deploy.
+- Ya trabajas (o quieres trabajar) en **Cursor** y prefieres que un pipeline de agentes cierre alcance, diseño, código y deploy.
 - Arrancás un producto de cero **o** adoptás un repo que ya existe (Onboard).
 - Aceptás gates de calidad en Build (TDD, cobertura, complejidad, SAST, e2e).
 
@@ -77,7 +77,7 @@ No es:
 |-------|--------|----------|
 | **Cursor** | tu IDE | Runtime de agentes (Orquesta + Leads + subagentes). |
 | **Este kit** | `infosails-harness` | Skills, templates, schemas, `infosails-init` / `update`. |
-| **Home** | repo con `harness.project.yaml` | Memoria + copia de skills. Ahí escribís `hola`. |
+| **Home** | repo con `harness.project.yaml` | Memoria + copia de skills. Ahí escribes `hola`. |
 | **Repos de producto** | uno o más gits | El código. Puede ser el mismo git que el home. |
 | **Memoria** | `memory/` | Blueprints, landscape, designs, builds, deploys, costos. |
 | **Vercel** | CLI + `VERCEL_TOKEN` | Deploy a producción después de pushear `main`. |
@@ -87,7 +87,7 @@ No es:
 Relación:
 
 ```text
-vos  ↔  Orquesta (Cursor)  ↔  Leads  →  memory/  +  repos de producto  →  Vercel prod
+tú  ↔  Orquesta (Cursor)  ↔  Leads  →  memory/  +  repos de producto  →  Vercel prod
               ↑
          este kit (skills)
 ```
@@ -108,7 +108,7 @@ cd infosails-harness
 ./scripts/playground
 ```
 
-Abrí **esta** carpeta en Cursor. En el chat:
+Abre **esta** carpeta en Cursor. En el chat:
 
 ```text
 hola
@@ -126,7 +126,7 @@ source ~/.zshrc
 infosails-init mi-app --path ~/Projects/mi-app
 ```
 
-Abrí **`~/Projects/mi-app`** en Cursor (el home, no el kit). Escribí `hola` → Discovery.
+Abre **`~/Projects/mi-app`** en Cursor (el home, no el kit). Escribe `hola` → Discovery.
 
 ### C — Repo que ya existe
 
@@ -134,7 +134,7 @@ Abrí **`~/Projects/mi-app`** en Cursor (el home, no el kit). Escribí `hola` �
 infosails-init . --into ~/Projects/app-existente
 ```
 
-Abrí ese home → `hola` → **Onboard**. El Lead pregunta repos si no están en `harness.project.yaml`.
+Abre ese home → `hola` → **Onboard**. El Lead pregunta repos si no están en `harness.project.yaml`.
 
 Instalación completa, pack runtime y `infosails-update`: [§10](#10-instalación-y-proyectos) y [§11](#11-actualizar-el-harness-en-un-proyecto).
 
@@ -144,10 +144,10 @@ Instalación completa, pack runtime y `infosails-update`: [§10](#10-instalació
 
 Regla: **un workspace = el home del producto** (o el kit si estás en playground). No abras el kit para construir *tu* app.
 
-1. Recargá la ventana si acabás de instanciar o actualizar (`Developer: Reload Window`).
+1. Recarga la ventana si acabas de instanciar o actualizar (`Developer: Reload Window`).
 2. Chat de Cursor → `hola` / `director` / `estado`.
 3. La Orquesta lee `memory/director-state.json` y te muestra el menú (Discovery, Bug, Design, Build, Deploy, Onboard, backlog).
-4. Elegí o pedí en lenguaje natural. Confirmá cuando proponga la **siguiente** fase.
+4. Elige o pide en lenguaje natural. Confirma cuando proponga la **siguiente** fase.
 
 Frases que funcionan:
 
@@ -157,16 +157,16 @@ Frases que funcionan:
 | Historia nueva | `nueva feature: exportar CSV de facturas` |
 | Bug | `bug: el login falla con email vacío` |
 | Brownfield | `onboard con repos: web → ., api → ../mi-api` |
-| Seguir | `sí, Design` · `activá Build` · `abortá Discovery` |
+| Seguir | `sí, Design` · `activa Build` · `aborta Discovery` |
 | UI | `usamos shadcn` · `el design system es MUI` (si Design pregunta) |
 
 Qué **no** hacer:
 
-- Pedirle a Cursor “implementá X” salteando Discovery/Design: el harness espera un Blueprint y un Design Package.
+- Pedirle a Cursor “implementa X” salteando Discovery/Design: el harness espera un Blueprint y un Design Package.
 - Hablarle a un Lead por nombre interno (`interviewer`, `tdd-dev`): la Orquesta no los activa; los activa el Lead.
 - Pegar secretos en el chat. Van en `.env` (gitignored).
 - Editar a mano `memory/director-state.json` o `processes/*/state.json` salvo que sepas el protocolo.
-- Correr `infosails-init --into` sobre un home que **ya** tiene harness: usá `infosails-update`.
+- Correr `infosails-init --into` sobre un home que **ya** tiene harness: usa `infosails-update`.
 
 Mientras un Lead está `running`, la Orquesta no arranca otro proceso. Si está `blocked`, te va a pedir una decisión (secreto, ADR, confirmación).
 
@@ -181,7 +181,7 @@ Así se siente un ciclo completo. No hace falta memorizar archivos: la Orquesta 
 3. **Build** — TDD por work package, cobertura ≥85%, CCN ≤10, mutación, SAST, Playwright mapeado al Gherkin. Salida: código + `memory/builds/BR-…`.
 4. **Deploy** — commit y `git push origin main` (sin `--force`), luego `vercel --prod`. Salida: `memory/deploys/DR-…` y URL.
 
-Dónde mirar si querés el artefacto, no el chat:
+Dónde mirar si quieres el artefacto, no el chat:
 
 | Momento | Archivo |
 |---------|---------|
@@ -203,7 +203,7 @@ Diagrama de secuencia: [§8](#8-flujo-completo-de-una-historia). Detalle de cada
 Onboard **no escribe código**. Hidrata memoria para que Discovery solo cubra lo nuevo.
 
 1. `infosails-init . --into <home>` si el repo aún no es un home.
-2. Declará repos en `harness.project.yaml` o en el chat al activar Onboard.
+2. Declara repos en `harness.project.yaml` o en el chat al activar Onboard.
 3. El Lead recorre código/docs, arma landscape (stack, **design system que detecte**, módulos) y blueprints **Done** (as-built).
 4. Huecos evidentes → `gaps` o un BP Ready, no Design/Build inventados.
 
@@ -211,11 +211,11 @@ Después: `hola` → Discovery para la siguiente historia.
 
 ---
 
-## Qué decidís vos
+## Qué decides tú
 
 El kit trae políticas de org (nubes, hexagonal, gates). El **producto** decide el resto.
 
-| El harness fija | Vos (o Design con vos) |
+| El harness fija | Tú (o Design contigo) |
 |-----------------|------------------------|
 | Orden Discovery → Design → Build → Deploy | Qué construir |
 | Arquitectura hexagonal; microservicios solo con ADR | Dominio, bounded contexts |
@@ -235,10 +235,10 @@ Personalizar un proyecto: `harness.project.yaml` (`repositories`, `design_system
 | Síntoma | Qué probar |
 |---------|------------|
 | `hola` no dispara la Orquesta | Workspace = home (o kit con playground). Reload Window. Existe `harness.project.yaml` o `playground/harness.project.yaml`. |
-| El agente codea sin Blueprint | Pedí `director` / `hola` y Discovery. No uses el chat como IDE de la historia. |
+| El agente codea sin Blueprint | Pide `director` / `hola` y Discovery. No uses el chat como IDE de la historia. |
 | “No hay proyecto” | `./scripts/playground` o `infosails-init`. |
 | Lead `blocked` por secretos | `.env` en el home o el repo de producto; no en el chat. [§12](#12-variables-de-entorno). |
-| No instala el paquete UI | Kit público: no hace falta `GITHUB_TOKEN`. Registry privado: token `read:packages`. O elegí otro kit. |
+| No instala el paquete UI | Kit público: no hace falta `GITHUB_TOKEN`. Registry privado: token `read:packages`. O elige otro kit. |
 | Deploy no pushea `main` | Branch protegida, no hay remote, o estás en playground del kit (no pushea este git). |
 | Skills viejos en el home | `./scripts/install` en el kit y `infosails-update` en el home. [§11](#11-actualizar-el-harness-en-un-proyecto). |
 | Playground mezclado con producto | Memoria del producto **nunca** en este repo. Home aparte. |
@@ -473,7 +473,7 @@ Cada turno del agente (hook Cursor `stop` / `subagentStop`) se atribuye al artef
 
 La Orquesta muestra el gasto al ver estado y lo copia a `director-state.json` → `history[].usage` al cerrar un proceso.
 
-Esto **no** es la factura de Cursor (suscripción / dashboard). Es consumo atribuido a este producto. Para ver dinero, completá `rates.json`. `harness.project.yaml` → `costs.enabled: false` apaga el hook.
+Esto **no** es la factura de Cursor (suscripción / dashboard). Es consumo atribuido a este producto. Para ver dinero, completa `rates.json`. `harness.project.yaml` → `costs.enabled: false` apaga el hook.
 
 ---
 
@@ -758,7 +758,7 @@ Quedan: comandos `infosails-init`, `infosails-update` y `INFOSAILS_HARNESS_HOME`
 
 Variables de entorno del kit y del proyecto: [§12](#12-variables-de-entorno).
 
-Para trabajar en proyectos reales no necesitás el playground: instalá el runtime (o el pack) y usá `infosails-init`.
+Para trabajar en proyectos reales no necesitas el playground: instala el runtime (o el pack) y usa `infosails-init`.
 
 ### Proyecto nuevo
 
@@ -778,7 +778,7 @@ cd ~/Projects/app-existente
 
 Crea: `memory/`, `.cursor/skills/` (incluye `_shared/`, **onboard** y **deploy**), `harness.project.yaml`, templates, schemas.
 
-**Repos del producto:** si no están en `harness.project.yaml` ni en el chat, **Onboard pregunta** antes de escanear. También podés declararlas en YAML o al activar (`Onboard con repos: web → ., api → ../mi-api`).
+**Repos del producto:** si no están en `harness.project.yaml` ni en el chat, **Onboard pregunta** antes de escanear. También puedes declararlas en YAML o al activar (`Onboard con repos: web → ., api → ../mi-api`).
 
 Luego el **Onboard Lead** genera solo lo que falta en memoria: landscape, capacidades as-built como blueprints **Done**, índices, backlog e informe `memory/onboard/`. No inventa Design Packages ni Build Reports con gates falsos.
 
@@ -795,7 +795,7 @@ Hay dos capas. Hay que refrescar **las dos**.
 | Kit (máquina) | `INFOSAILS_HARNESS_HOME` | `infosails-init`, `infosails-update`, templates, skills fuente |
 | Home del producto | repo con `harness.project.yaml` + `memory/` | copia de `.cursor/skills/`, templates, schemas, rules |
 
-**No** corras `infosails-init --into` sobre un home que ya tiene harness: pisa `harness.project.yaml` y puede mezclar `memory/`. Usá `infosails-update`.
+**No** corras `infosails-init --into` sobre un home que ya tiene harness: sobrescribe `harness.project.yaml` y puede mezclar `memory/`. Usa `infosails-update`.
 
 ### Paso 1 — Kit en la máquina
 
@@ -805,7 +805,7 @@ cd /ruta/al-kit          # o dist/infosails-harness-<version>/
 source ~/.zshrc
 ```
 
-Comprobá:
+Comprueba:
 
 ```bash
 echo "$INFOSAILS_HARNESS_HOME"
@@ -842,14 +842,14 @@ Si `.cursor/skills` es un symlink (playground del kit), no lo pisa.
 Los skills ya apuntan al kit. Para carpetas de memoria nuevas, sin borrar historias:
 
 ```bash
-./scripts/playground          # no uses --reset si querés conservar memory/
+./scripts/playground          # no uses --reset si quieres conservar memory/
 # o:
 ./scripts/update-project --path playground
 ```
 
 ### Después
 
-En Cursor, recargá la ventana del **home** (`Developer: Reload Window`) y escribí `hola`. Commiteá las copias (skills, templates, schemas) en el git del home.
+En Cursor, recarga la ventana del **home** (`Developer: Reload Window`) y escribe `hola`. Haz commit de las copias (skills, templates, schemas) en el git del home.
 
 ---
 
@@ -862,7 +862,7 @@ Nunca commitees `.env`. No pegues valores en el chat.
 | Variable | Dónde | Cuándo | Para qué |
 |----------|--------|--------|----------|
 | `INFOSAILS_HARNESS_HOME` | Shell (la escribe `./scripts/install`) | Siempre, tras instalar el kit | Ruta del kit. Fallback de `infosails-init` si el comando no resuelve el home solo. |
-| `INFOSAILS_BIN_DIR` | Shell, opcional **antes** de `./scripts/install` | Si no querés `~/.local/bin` | Directorio de los symlink `infosails-init` / `infosails-update`. Default: `$HOME/.local/bin`. |
+| `INFOSAILS_BIN_DIR` | Shell, opcional **antes** de `./scripts/install` | Si no quieres `~/.local/bin` | Directorio de los symlink `infosails-init` / `infosails-update`. Default: `$HOME/.local/bin`. |
 | `GITHUB_TOKEN` | `.env` del **proyecto** (o el entorno) | Design/Build con UI de **registry privado** | p. ej. GitHub Packages (`read:packages`). No hace falta si el kit UI es público ni para clonar este kit. |
 | `VERCEL_TOKEN` | `.env` del **home** o del repo de producto | Deploy (`vercel --prod`) | Token de Vercel. El agente lo lee del entorno; no uses `--token` en la CLI. |
 
@@ -881,11 +881,11 @@ Para otra carpeta de binarios:
 INFOSAILS_BIN_DIR="$HOME/bin" ./scripts/install
 ```
 
-Tras reinstalar o cambiar de versión del kit: `source ~/.zshrc` (o abrí una terminal nueva). Si `INFOSAILS_HARNESS_HOME` apunta a un pack viejo y el comando a otro kit, `infosails-init` avisa y usa el del comando.
+Tras reinstalar o cambiar de versión del kit: `source ~/.zshrc` (o abre una terminal nueva). Si `INFOSAILS_HARNESS_HOME` apunta a un pack viejo y el comando a otro kit, `infosails-init` avisa y usa el del comando.
 
 ### Proyecto (`.env`)
 
-`infosails-init` copia `templates/project/.env.example` → `.env.example`. Copiá a `.env` y descomentá lo que uses:
+`infosails-init` copia `templates/project/.env.example` → `.env.example`. Copia a `.env` y descomenta lo que uses:
 
 ```bash
 # Registry privado — solo si el kit UI del producto lo pide
@@ -1020,7 +1020,7 @@ Vulnerabilidades en privado: [SECURITY.md](SECURITY.md) o un [GitHub Security Ad
 
 El kit se publica bajo la [Apache License 2.0](LICENSE).
 
-**InfoSails** y marcas asociadas no están cubiertas por esa licencia. Podés atribuir el origen del software; no uses el nombre ni logos para insinuar respaldo de InfoSails sin permiso. Ver [NOTICE](NOTICE).
+**InfoSails** y marcas asociadas no están cubiertas por esa licencia. Puedes atribuir el origen del software; no uses el nombre ni logos para insinuar respaldo de InfoSails sin permiso. Ver [NOTICE](NOTICE).
 
 `@infosails/design-system` es un paquete **aparte** (no está en este repo). El harness no lo exige: el producto elige kit UI (política en `config/harness.yaml` → `org.design_system`).
 

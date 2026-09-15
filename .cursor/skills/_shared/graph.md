@@ -3,8 +3,8 @@
 Fuente de verdad del **qué corre ahora**. No es un runtime aparte: el runtime sigue siendo Task/subagent de Cursor. El grafo vive en `memory/processes/<proceso>/state.json` → `graph`.
 
 Template del kit: `.cursor/skills/<proceso>/graph.yaml`.  
-Al `start`, si `graph.nodes` está vacío o falta, copiá el YAML al state.  
-Al `resume`, **no** recopies el template: seguí el grafo persistido.
+Al `start`, si `graph.nodes` está vacío o falta, copia el YAML al state.  
+Al `resume`, **no** recopies el template: sigue el grafo persistido.
 
 Guía de lanzamiento: [lead-subagents.md](lead-subagents.md).  
 Crítico: [critic.md](critic.md). Lecciones: [lessons.md](lessons.md).
@@ -44,7 +44,7 @@ Un nodo está **ready** si:
 2. Todo predecesor (aristas `from → este`) está `done` o `skipped`
 3. Ningún path de `writes[]` se solapa con un nodo `running` (prefijo o igualdad)
 
-Lanzá **todos** los ready en el mismo turno:
+Lanza **todos** los ready en el mismo turno:
 
 - `kind: human` → el Lead encarna (conversación). Nunca dos human a la vez.
 - `kind: gate` o `serial` → un Task (o encarnar). Varios serial ready sin overlap de writes → paralelo igual.
@@ -88,7 +88,7 @@ Usalo en outbox `status` / `complete`. No inventes porcentajes.
 
 Si `critic` falla: los nodos responsables vuelven a `idle` o `running`; `critic` vuelve a `idle`. **No** agregues aristas hacia atrás.
 
-Si el hueco es de un proceso **anterior**: outbox `blocked` + escribí una lección ([lessons.md](lessons.md)). No marques `complete`.
+Si el hueco es de un proceso **anterior**: outbox `blocked` + escribe una lección ([lessons.md](lessons.md)). No marques `complete`.
 
 ## Ciclos
 

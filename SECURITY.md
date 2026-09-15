@@ -11,7 +11,7 @@ Opciones, en este orden:
 1. [GitHub Security Advisory](https://github.com/infosails/infosails-harness/security/advisories/new) (privado).
 2. Email: **jose@infosails.com** con asunto `SECURITY infosails-harness`.
 
-Incluí:
+Incluye:
 
 - Descripción del problema y impacto (qué puede hacer un atacante).
 - Pasos para reproducir o PoC **en privado**.
@@ -29,7 +29,7 @@ En este repo importa sobre todo:
 - Skills de Deploy (git push, Vercel) y Build (no inventar ni commitear secretos)
 - Templates que se copian a proyectos (`.env.example`, rules)
 
-Fuera de alcance típico (reportalo igual si no estás seguro):
+Fuera de alcance típico (infórmalo igual si no estás seguro):
 
 - Apps de producto generadas por el harness (eso vive en otro git)
 - Design systems de terceros que el producto elija (shadcn, MUI, `@infosails/design-system`, …)
@@ -39,11 +39,11 @@ Fuera de alcance típico (reportalo igual si no estás seguro):
 
 Nunca commitees `.env`, `GITHUB_TOKEN`, `VERCEL_TOKEN` ni dumps de `playground/memory/costs` con datos reales de otra org.
 
-Si publicás un secreto por error: rotarlo de inmediato y avisar por los canales de arriba.
+Si publicas un secreto por error: rótalo de inmediato y avisa por los canales de arriba.
 
 ## Versiones soportadas
 
-Se parchea la rama `main` del kit. No hay LTS aparte. Actualizá proyectos con `infosails-update` tras un fix de seguridad.
+Se parchea la rama `main` del kit. No hay LTS aparte. Actualiza proyectos con `infosails-update` tras un fix de seguridad.
 
 ## Divulgación
 

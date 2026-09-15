@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Un issue por idea. Mantené el alcance en el **kit**, no en un producto instanciado.
+        Un issue por idea. Mantén el alcance en el **kit**, no en un producto instanciado.
   - type: textarea
     id: problem
     attributes:

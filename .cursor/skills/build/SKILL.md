@@ -202,5 +202,5 @@ DS impracticable → `blocked` + lección a Design. Fail interno → rewind al W
 - TDD siempre; cobertura ≥85%; CCN ≤10; mutación real; SAST real; paralelizar WPs según `depends_on`/`writes`.
 - No contradecir DS/ADRs.
 - No `complete` con gates rojos ni con `critic` distinto de `done`.
-- **No** pushear a `main` ni correr `vercel --prod`: eso es **Deploy** (git + Vercel). Dejá el working tree listo para commitear.
+- **No** pushear a `main` ni correr `vercel --prod`: eso es **Deploy** (git + Vercel). Deja el working tree listo para hacer commit.
 - Playground del kit: si no hay app real, documentar límites y `blocked` o ejercicio mínimo — no fingir % / e2e / sast / CCN.

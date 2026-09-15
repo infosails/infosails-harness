@@ -7,7 +7,7 @@ body:
     attributes:
       value: |
         Gracias. No pegues secretos, `.env` ni tokens.
-        Si es una vulnerabilidad, usá un [Security Advisory](https://github.com/infosails/infosails-harness/security/advisories/new).
+        Si es una vulnerabilidad, usa un [Security Advisory](https://github.com/infosails/infosails-harness/security/advisories/new).
   - type: textarea
     id: what
     attributes:
