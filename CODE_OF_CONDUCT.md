@@ -28,7 +28,7 @@ Ejemplos de comportamiento inaceptable:
 
 ## Aplicación
 
-Los responsables de la comunidad son José Lueiza y quienes designe InfoSails (`jose@infosails.com`). Pueden aclarar y hacer cumplir estos estándares, y tomarán las medidas que consideren adecuadas ante conductas que juzguen inapropiadas, amenazantes, ofensivas o dañinas.
+Los responsables de la comunidad son José Lueiza y quienes designe InfoSails (`harness@infosails.com`). Pueden aclarar y hacer cumplir estos estándares, y tomarán las medidas que consideren adecuadas ante conductas que juzguen inapropiadas, amenazantes, ofensivas o dañinas.
 
 Pueden eliminar, editar o rechazar comentarios, commits, código, issues, wikis y cualquier otra contribución que no se alinee con este Código, y comunicarán las razones de las decisiones de moderación cuando corresponda.
 
@@ -38,7 +38,7 @@ Este Código aplica en todos los espacios del proyecto y también cuando una per
 
 ## Denuncias
 
-Incidentes de abuso, acoso o conducta inaceptable: **jose@infosails.com**.
+Incidentes de abuso, acoso o conducta inaceptable: **harness@infosails.com**.
 
 Todas las denuncias se revisarán e investigarán con prontitud y de forma justa. Se respetará la privacidad y la seguridad de quien denuncia.
 

@@ -9,7 +9,7 @@ InfoSails toma en serio la seguridad del harness y de los proyectos que instanci
 Opciones, en este orden:
 
 1. [GitHub Security Advisory](https://github.com/infosails/infosails-harness/security/advisories/new) (privado).
-2. Email: **jose@infosails.com** con asunto `SECURITY infosails-harness`.
+2. Email: **harness@infosails.com** con asunto `SECURITY infosails-harness`.
 
 Incluye:
 
