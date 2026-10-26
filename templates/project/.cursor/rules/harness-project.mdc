@@ -19,4 +19,4 @@ Guía: `.cursor/skills/_shared/lead-subagents.md` (grafo de ejecución; frontier
 - Costos: `memory/costs/` — tokens por historia (hook; no editar a mano)
 - Lecciones: `memory/lessons/` — huecos de calidad entre procesos (escribe el Lead que bloquea)
 
-Design Lead lee landscape/ADRs/infra antes de proponer; Build Lead implementa con TDD, cov≥85%, CCN≤10, mutación y e2e; consume Design Packages. Deploy Lead pushea `main` y corre `vercel --prod`. Onboard Lead hidrata landscape + BPs Done desde un repo ya iniciado.
+Design Lead lee landscape/ADRs/infra antes de proponer; Build Lead implementa con TDD, cov≥85%, CCN≤10, mutación y e2e; consume Design Packages. Deploy Lead pushea `main`, publica Vercel sin `--prod`, taguea semver y corre `vercel --prod`. Onboard Lead hidrata landscape + BPs Done desde un repo ya iniciado.

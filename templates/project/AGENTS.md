@@ -16,7 +16,7 @@ Guía: `.cursor/skills/_shared/lead-subagents.md` y `graph.md`.
 | `memory/designs/` | Design Packages |
 | `memory/builds/` | Build Reports |
 | `memory/onboard/` | Informes de seed (Onboard) |
-| `memory/deploys/` | Deploy Reports (SHA en `main`) |
+| `memory/deploys/` | Deploy Reports (SHA en `main`, tag semver, URLs dev y prod) |
 | `memory/lessons/` | Calidad rechazada aguas arriba (LSN-…) |
 | `memory/costs/` | Tokens por historia (hook Cursor) |
 | `memory/processes/` | Estado/inbox/outbox por Lead |
@@ -28,4 +28,4 @@ Bugs: Bug → Build → Deploy.
 Brownfield: Onboard → (memoria as-is) → Discovery solo para lo nuevo.
 
 Build: TDD, cobertura ≥85%, CCN≤10, mutación, SAST, WPs en paralelo, Playwright + Gherkin.  
-Deploy: commit y push a `main` (producto + este home) y `vercel --prod` en las apps Vercel.
+Deploy: pregunta si es dev y prod o solo prod, después commit y push a `main`. Vercel dev solo si eligieron ambos. El tag semver y `vercel --prod` esperan otra autorización.

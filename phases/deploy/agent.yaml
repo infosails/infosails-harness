@@ -4,7 +4,8 @@ status: active
 lead: deploy-lead
 skill: .cursor/skills/deploy/SKILL.md
 description: >
-  Commit y push a main (producto + home). Después vercel --prod en apps Vercel.
+  Pregunta dev+prod o solo prod. Luego commit y push a main.
+  Vercel dev solo si eligieron ambos. Tag y vercel --prod tras autorización.
 state: memory/processes/deploy/state.json
 inbox: memory/processes/deploy/inbox-from-orchestra.json
 outbox: memory/processes/deploy/outbox-to-orchestra.json

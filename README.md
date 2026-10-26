@@ -87,7 +87,7 @@ No es:
 Relación:
 
 ```text
-tú  ↔  Orquesta (Cursor)  ↔  Leads  →  memory/  +  repos de producto  →  Vercel prod
+tú  ↔  Orquesta (Cursor)  ↔  Leads  →  memory/  +  repos de producto  →  Vercel dev → prod
               ↑
          este kit (skills)
 ```
@@ -179,7 +179,7 @@ Así se siente un ciclo completo. No hace falta memorizar archivos: la Orquesta 
 1. **Discovery** — entrevista tipo periodista: dolor, **quién usa** (perfiles), tipo de app, qué ya existe, integraciones, Core, ≥5 `NO`, Gherkin. Salida: `memory/blueprints/BP-…`.
 2. **Design** — landscape + hexagonal + infra (Vercel y/o GCP) + repos. Si hay UI, elige o hereda el **kit de diseño** y mapea pantallas. Salida: `memory/designs/DS-…` (+ landscape/ADRs).
 3. **Build** — TDD por work package, cobertura ≥85%, CCN ≤10, mutación, SAST, Playwright mapeado al Gherkin. Salida: código + `memory/builds/BR-…`.
-4. **Deploy** — commit y `git push origin main` (sin `--force`), luego `vercel --prod`. Salida: `memory/deploys/DR-…` y URL.
+4. **Deploy** — pregunta si es dev y prod o solo prod, commit y `git push origin main` (sin `--force`). Dev solo si eligieron ambos; prod (tag y `vercel --prod`) si autorizas. Salida: `memory/deploys/DR-…`.
 
 Dónde mirar si quieres el artefacto, no el chat:
 
@@ -222,7 +222,7 @@ El kit trae políticas de org (nubes, hexagonal, gates). El **producto** decide 
 | Nubes: **Vercel** y **GCP** (otra = ADR) | Qué servicio de cada nube |
 | Gates de Build (TDD, cov, CCN, SAST, e2e) | Stack de tests del repo |
 | Un design system **por producto**, documentado | **Cuál** kit UI (shadcn, MUI, custom, ninguno, InfoSails, …) |
-| Deploy a `main` + `vercel --prod` | Tokens, protección de `main`, apps linkeadas |
+| Deploy a `main`, vercel dev, tag semver y `vercel --prod` | Tokens, protección de `main`, bump (`patch` si no dices otro), apps linkeadas |
 
 UI: si el landscape está vacío, Design **pregunta**. No asume `@infosails/design-system`. Guía: [`.cursor/skills/design/ui-designer.md`](.cursor/skills/design/ui-designer.md).
 
@@ -311,7 +311,7 @@ flowchart TB
   BL --> BSub["triager ∥ repro-scout · critic · scribe"]
   DesL --> DesSub["surveyor · architect ∥ ui-designer · critic · scribe"]
   BuL --> BuSub["planner · tdd-dev:* · gates ∥ · critic · scribe"]
-  DepL --> DepSub["committer:* ∥ · publisher:* ∥ · critic · scribe · home"]
+  DepL --> DepSub["committer:* ∥ · dev · tagger · prod · critic · scribe · home"]
   OnL --> OnSub["scouts ∥ · synthesizer · critic · scribe"]
 ```
 
@@ -382,7 +382,7 @@ flowchart LR
 
 La Orquesta **activa** y **delega** según `next_hint` del outbox y `config/harness.yaml`.
 
-Deploy (activo): commit + push a `main` (producto + home) y **`vercel --prod`** en las apps Vercel.
+Deploy (activo): pregunta si es **dev y prod** o **solo prod**, luego commit + push a `main`. **Vercel dev** solo en el primer caso. El **tag semver** y **`vercel --prod`** esperan otra autorización.
 
 ---
 
@@ -453,7 +453,7 @@ flowchart TB
 | `designs/` | Design | Design Packages (input de Build) |
 | `builds/` | Build | Build Reports (gates TDD/cov/mutación/SAST/e2e) |
 | `onboard/` | Onboard | Informe de seed brownfield |
-| `deploys/` | Deploy | Deploy Reports (SHA en `main` de producto y del home) |
+| `deploys/` | Deploy | Deploy Reports (SHA en `main`, tag semver, URLs de dev y de prod) |
 | `lessons/` | Lead que bloquea | Calidad rechazada del proceso anterior (`LSN-…`) |
 | `costs/` | Hook Cursor | Tokens (y USD estimado) por historia / bug / proceso |
 | `processes/*/` | Cada Lead | state + inbox + outbox |
@@ -579,26 +579,37 @@ Hidrata memoria desde un producto ya iniciado. No escribe código. Tras `complet
 
 ### 6.6 Deploy Lead
 
-**Salida:** `main` pusheada + Vercel prod + `memory/deploys/`  
+**Salida:** `main` pusheada + tag semver + Vercel dev + Vercel prod + `memory/deploys/`  
 **Skill:** [`.cursor/skills/deploy/SKILL.md`](.cursor/skills/deploy/SKILL.md)  
 **Git:** [`.cursor/skills/deploy/git.md`](.cursor/skills/deploy/git.md)  
 **Vercel:** [`.cursor/skills/deploy/vercel.md`](.cursor/skills/deploy/vercel.md)
 
-Deploy commitea y pushea a **`main`**, y después publica con **`vercel --prod --yes`**:
+Deploy pregunta los ambientes y después commitea y pushea a **`main`**:
 
-1. **Repos de producto** — el código.
-2. **Vercel** — cada app Vercel de esos repos (landscape / `.vercel`). Auth: `VERCEL_TOKEN` o `vercel login`.
-3. **Home** — `memory/` (el informe DR va en ese commit). No se publica en Vercel.
+1. **Ambientes** — dev y prod, o solo prod. Nada se publica antes de esa respuesta.
+2. **Repos de producto** — el código en `main`.
+3. **Dev** — solo si eligieron ambos: `vercel deploy --yes` **sin** `--prod`, y alias de esa URL al host de producción con `-dev` al final (`acme.vercel.app` → `acme-dev.vercel.app`).
+4. **Autorización** — pregunta si haces el tag y `vercel --prod`. Si hubo dev, muestra esa URL. Elegir “solo prod” no alcanza.
+5. **Prod** — solo si autorizas: tag anotado `vX.Y.Z` en ese SHA (push del tag) y, después, `vercel --prod --yes`.
+6. **Home** — `memory/` (el informe DR va en ese commit). No se publica en Vercel y no se taguea.
+
+Bump por defecto: **patch** (`v1.2.3` → `v1.2.4`). Si no hay tags, el primero es `v0.1.0` (`v1.0.0` si pides `major`). Di `minor` o `major` al activar Deploy si quieres otro salto.
 
 Si producto y home son el mismo git, un solo push git.  
-Playground del kit: **no** pushea `infosails-harness`; sí apps de producto y Vercel si están linkeadas.
+Playground del kit: **no** pushea `infosails-harness`; sí apps de producto, su tag y las dos fases Vercel si están linkeadas.
 
 ```mermaid
 flowchart LR
-  Sur[surveyor] --> Prod["committer producto ∥"]
+  Sur[surveyor] --> Ask0["¿dev y prod, o solo prod?"]
+  Ask0 --> Prod["committer producto ∥"]
   Prod --> GateP[gate git]
-  GateP --> Pub["publisher vercel ∥"]
-  Pub --> GateV[gate vercel]
+  GateP --> Dev["publisher dev ∥"]
+  Dev --> GateD[gate dev]
+  GateD --> Ask["¿autorizas prod?"]
+  Ask --> Tag["tagger semver ∥"]
+  Tag --> GateT[gate tag]
+  GateT --> Pub["publisher prod ∥"]
+  Pub --> GateV[gate prod]
   GateV --> Scr[scribe / DR]
   Scr --> Home[committer home]
   Home --> GateH[gate home]
@@ -607,10 +618,13 @@ flowchart LR
 | Qué | Qué no |
 |-----|--------|
 | `git push origin main` (sin `--force`) | Force-push; commitear `.env` |
-| `vercel --prod --yes` tras el git | Preview (`vercel` sin `--prod`) como este Deploy; `--token` en la CLI |
-| `complete` = main + URL de prod (o skip Vercel documentado) | Inventar URL; `gcloud` salvo pedido y landscape GCP |
+| `vercel deploy --yes` (dev) y alias `-dev` hacia ese deployment | Tratar el alias como prod; `--token` en la CLI |
+| Preguntar dev+prod o solo prod antes de git y de Vercel | Asumir dev en un proyecto que solo tiene prod |
+| Preguntar otra vez antes de prod | Tomar “solo prod” o el “deploy” inicial como el sí del tag |
+| Tag `vX.Y.Z` y `vercel --prod` solo tras un sí | `--force` en tags; taguear el home; prod antes del tag |
+| `complete` con prod = main + tag + URLs; un no cierra en dev | Inventar URL; `gcloud` salvo pedido y landscape GCP |
 
-Si `main` está protegida y el push falla → `blocked` (no Vercel). Si git ok y Vercel falla → `blocked` parcial. Si falló solo el home → producto y Vercel pueden haber quedado landed.
+Si `main` está protegida y el push falla → `blocked` (no Vercel, no tag). Si eligieron ambos y dev falla → `blocked` parcial (sin tag ni prod). Si eligieron solo prod, no hay fase dev. Si el tag falla → sin prod. Si prod falla → main y el tag pueden haber quedado (y dev, si la hubo). Si falló solo el home → producto, tag y Vercel pueden haber quedado landed.
 
 ---
 
@@ -680,11 +694,21 @@ sequenceDiagram
   end
   Bld->>O: outbox complete BR-…
   O->>Dep: inbox start focus BR
+  Dep->>O: ¿dev y prod, o solo prod?
+  O-->>U: elige ambientes
+  U->>O: los dos, o solo prod
+  O->>Dep: resume
   Dep->>Dep: commit + push a main (producto)
+  Dep->>Dep: vercel dev, si eligió ambos
+  Dep->>O: ¿autorizas tag y prod?
+  O-->>U: URL dev + tag propuesto
+  U->>O: sí
+  O->>Dep: resume
+  Dep->>Dep: tag semver
   Dep->>Dep: vercel --prod
   Dep->>Dep: DR-… + push home/memory
   Dep->>O: outbox complete DR-…
-  O-->>U: main @ SHA + URL Vercel
+  O-->>U: main @ SHA + tag + URLs dev y prod
 ```
 
 ---
@@ -864,7 +888,7 @@ Nunca commitees `.env`. No pegues valores en el chat.
 | `INFOSAILS_HARNESS_HOME` | Shell (la escribe `./scripts/install`) | Siempre, tras instalar el kit | Ruta del kit. Fallback de `infosails-init` si el comando no resuelve el home solo. |
 | `INFOSAILS_BIN_DIR` | Shell, opcional **antes** de `./scripts/install` | Si no quieres `~/.local/bin` | Directorio de los symlink `infosails-init` / `infosails-update`. Default: `$HOME/.local/bin`. |
 | `GITHUB_TOKEN` | `.env` del **proyecto** (o el entorno) | Design/Build con UI de **registry privado** | p. ej. GitHub Packages (`read:packages`). No hace falta si el kit UI es público ni para clonar este kit. |
-| `VERCEL_TOKEN` | `.env` del **home** o del repo de producto | Deploy (`vercel --prod`) | Token de Vercel. El agente lo lee del entorno; no uses `--token` en la CLI. |
+| `VERCEL_TOKEN` | `.env` del **home** o del repo de producto | Deploy (vercel dev y `vercel --prod`) | Token de Vercel. El agente lo lee del entorno; no uses `--token` en la CLI. |
 
 ### Máquina (install)
 
@@ -926,7 +950,7 @@ infosails-harness/
 │   ├── design/               ← + ui-designer, diagrams, principles
 │   ├── build/                ← + standards, sast, complexity
 │   ├── onboard/              ← seed brownfield
-│   ├── deploy/               ← git main + vercel --prod
+│   ├── deploy/               ← git main, vercel dev, tag semver, vercel --prod
 │   └── _shared/              ← lead-subagents, graph, critic, lessons
 ├── .cursor/hooks.json        ← stop → scripts/record-usage (playground / kit)
 ├── templates/                ← blueprints, DS, ADR, build-report, onboard, deploy-report, project/
@@ -957,7 +981,7 @@ infosails-harness/
 | Design | Design Lead | `memory/designs/` + `memory/architecture/` | active |
 | Build | Build Lead | código + `memory/builds/` | active |
 | Onboard | Onboard Lead | landscape + BPs Done + `memory/onboard/` | active |
-| Deploy | Deploy Lead | `main` + Vercel prod + `memory/deploys/` | active |
+| Deploy | Deploy Lead | `main` + tag semver + Vercel dev y prod + `memory/deploys/` | active |
 
 ### Skills y guías
 
@@ -978,7 +1002,7 @@ infosails-harness/
 | Complejidad ciclomática | `.cursor/skills/build/complexity.md` |
 | Deploy | `.cursor/skills/deploy/SKILL.md` |
 | Deploy (git a main) | `.cursor/skills/deploy/git.md` |
-| Deploy (Vercel prod) | `.cursor/skills/deploy/vercel.md` |
+| Deploy (Vercel dev y prod) | `.cursor/skills/deploy/vercel.md` |
 | Variables de entorno | `README.md` §12 |
 
 ### Artefactos (templates)

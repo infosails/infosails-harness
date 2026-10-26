@@ -1,5 +1,8 @@
 # Template DAG — Deploy.
-# surveyor instancía committer:<repo_id> (producto) y publisher:<app_id>.
+# Primero se elige dev+prod o solo prod. Dev (sin --prod) solo si eligieron ambos.
+# Prod (tag semver, luego --prod) solo con autorización humana.
+# surveyor instancía committer:<repo_id>, publisher:dev:<app_id>,
+# tagger:<repo_id> y publisher:prod:<app_id>.
 # Ver _shared/graph.md. Home siempre después de scribe.
 
 process: deploy
@@ -8,11 +11,31 @@ nodes:
     role: surveyor
     kind: serial
     writes: []
+  - id: choose:targets
+    role: chooser
+    kind: human
+    optional: true
+    writes: []
   - id: gate:git
     role: gate
     kind: gate
     writes: []
-  - id: gate:vercel
+  - id: gate:vercel:dev
+    role: gate
+    kind: gate
+    optional: true
+    writes: []
+  - id: approve:prod
+    role: approver
+    kind: human
+    optional: true
+    writes: []
+  - id: gate:tag
+    role: gate
+    kind: gate
+    optional: true
+    writes: []
+  - id: gate:vercel:prod
     role: gate
     kind: gate
     optional: true
@@ -37,9 +60,13 @@ nodes:
     kind: gate
     writes: []
 edges:
-  - { from: surveyor, to: gate:git }
-  - { from: gate:git, to: gate:vercel }
-  - { from: gate:vercel, to: critic }
+  - { from: surveyor, to: choose:targets }
+  - { from: choose:targets, to: gate:git }
+  - { from: gate:git, to: gate:vercel:dev }
+  - { from: gate:vercel:dev, to: approve:prod }
+  - { from: approve:prod, to: gate:tag }
+  - { from: gate:tag, to: gate:vercel:prod }
+  - { from: gate:vercel:prod, to: critic }
   - { from: critic, to: scribe }
   - { from: scribe, to: committer:home }
   - { from: committer:home, to: gate:home }

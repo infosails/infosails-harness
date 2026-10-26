@@ -20,6 +20,6 @@ Si existe `playground/harness.project.yaml` → `PROJECT_ROOT = playground/`.
 | design | Design Lead (hexagonal + Mermaid + ui-designer / kit UI del producto) |
 | build | Build Lead (TDD, cov≥85%, CCN≤10, mutación, SAST, Playwright+Gherkin) |
 | onboard | Onboard Lead (hidratar memoria desde proyecto ya iniciado) |
-| deploy | Deploy Lead (git `main` + `vercel --prod`; home versiona `memory/`) |
+| deploy | Deploy Lead (git `main`, vercel dev, tag semver, `vercel --prod`; home versiona `memory/`) |
 
 Grafo de ejecución y crítico: `_shared/graph.md`, `critic.md`, `lessons.md`.

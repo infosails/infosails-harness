@@ -52,7 +52,7 @@ Si `processes.<id>.availability === "planned"`:
 
 **Design está `active`:** tras `discovery_done` puede delegar al Design Lead.
 
-**Deploy está `active`:** tras `build_done` puede delegar al Deploy Lead (git `main` + `vercel --prod`). Tras `complete` de Deploy: stage `done`.
+**Deploy está `active`:** tras `build_done` puede delegar al Deploy Lead (pregunta dev+prod o solo prod; tag y `vercel --prod` solo tras autorización). Tras `complete` de Deploy: stage `done`. Un `blocked` con `deploy_targets` o `prod_authorization` se reanuda con `resume`, no con `start`.
 
 Cuando un proceso pase de `planned` → `active` en el kit, el Director podrá `delegate`.
 

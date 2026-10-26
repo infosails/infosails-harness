@@ -42,6 +42,27 @@
         }
       }
     },
+    "prod_authorized": { "type": ["boolean", "null"] },
+    "deploy_targets": { "type": ["string", "null"], "enum": ["both", "prod", null] },
+    "semver_bump": {
+      "type": "string",
+      "enum": ["major", "minor", "patch"]
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "repo_id": { "type": "string" },
+          "name": { "type": "string", "pattern": "^v(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$" },
+          "sha": { "type": "string" },
+          "bump": { "type": "string", "enum": ["major", "minor", "patch"] },
+          "pushed": { "type": "boolean" },
+          "reused": { "type": "boolean" },
+          "skipped_reason": { "type": ["string", "null"] }
+        }
+      }
+    },
     "vercel": {
       "type": "array",
       "items": {
@@ -49,7 +70,10 @@
         "properties": {
           "id": { "type": "string" },
           "path": { "type": "string" },
+          "target": { "type": "string", "enum": ["dev", "prod"] },
           "url": { "type": ["string", "null"] },
+          "deployment_url": { "type": ["string", "null"] },
+          "alias": { "type": ["string", "null"] },
           "published": { "type": "boolean" },
           "skipped_reason": { "type": ["string", "null"] }
         }

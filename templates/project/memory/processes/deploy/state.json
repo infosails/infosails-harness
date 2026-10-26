@@ -6,27 +6,38 @@
   "status": "idle",
   "current_agent": null,
   "agents": {
-    "surveyor": { "role": "Repos, rama, dirty tree, remote; instanciar committer/publisher", "status": "idle", "note": null },
+    "surveyor": { "role": "Repos, rama, dirty tree, remote, tags; instanciar committer/publisher/tagger", "status": "idle", "note": null },
+    "chooser": { "role": "Antes de git y de Vercel: dev y prod, o solo prod (choose:targets)", "status": "idle", "note": null },
     "committer": { "role": "Commit + push a main (instancias committer:<repo> y committer:home)", "status": "idle", "note": null },
-    "publisher": { "role": "vercel --prod (instancias publisher:<app>)", "status": "idle", "note": null },
-    "gate": { "role": "SHA git; URL Vercel; sin secretos; sin force (gate:git|vercel|home)", "status": "idle", "note": null },
-    "critic": { "role": "SHA + URL o skip; sin secretos; antes de scribe", "status": "idle", "note": null },
+    "publisher": { "role": "Fase dev: vercel deploy sin --prod y alias -dev. Fase prod: vercel --prod (publisher:dev|prod:<app>)", "status": "idle", "note": null },
+    "tagger": { "role": "Tag semver vX.Y.Z en el SHA de main, antes de vercel --prod (tagger:<repo>)", "status": "idle", "note": null },
+    "approver": { "role": "Pedir autorización antes del tag y de vercel --prod (approve:prod)", "status": "idle", "note": null },
+    "gate": { "role": "SHA git; URL dev; tag; URL prod; sin secretos; sin force (gate:git|vercel:dev|tag|vercel:prod|home)", "status": "idle", "note": null },
+    "critic": { "role": "SHA + tag + URLs o skip; sin secretos; antes de scribe", "status": "idle", "note": null },
     "scribe": { "role": "Deploy Report + outbox", "status": "idle", "note": null }
   },
   "graph": {
     "nodes": [
       { "id": "surveyor", "role": "surveyor", "kind": "serial", "status": "idle", "writes": [] },
+      { "id": "choose:targets", "role": "chooser", "kind": "human", "optional": true, "status": "idle", "writes": [] },
       { "id": "gate:git", "role": "gate", "kind": "gate", "status": "idle", "writes": [] },
-      { "id": "gate:vercel", "role": "gate", "kind": "gate", "optional": true, "status": "idle", "writes": [] },
+      { "id": "gate:vercel:dev", "role": "gate", "kind": "gate", "optional": true, "status": "idle", "writes": [] },
+      { "id": "approve:prod", "role": "approver", "kind": "human", "optional": true, "status": "idle", "writes": [] },
+      { "id": "gate:tag", "role": "gate", "kind": "gate", "optional": true, "status": "idle", "writes": [] },
+      { "id": "gate:vercel:prod", "role": "gate", "kind": "gate", "optional": true, "status": "idle", "writes": [] },
       { "id": "critic", "role": "critic", "kind": "gate", "status": "idle", "writes": [] },
       { "id": "scribe", "role": "scribe", "kind": "serial", "status": "idle", "writes": ["memory/deploys/", "memory/backlog.json"] },
       { "id": "committer:home", "role": "committer", "kind": "serial", "status": "idle", "writes": ["."] },
       { "id": "gate:home", "role": "gate", "kind": "gate", "status": "idle", "writes": [] }
     ],
     "edges": [
-      { "from": "surveyor", "to": "gate:git" },
-      { "from": "gate:git", "to": "gate:vercel" },
-      { "from": "gate:vercel", "to": "critic" },
+      { "from": "surveyor", "to": "choose:targets" },
+      { "from": "choose:targets", "to": "gate:git" },
+      { "from": "gate:git", "to": "gate:vercel:dev" },
+      { "from": "gate:vercel:dev", "to": "approve:prod" },
+      { "from": "approve:prod", "to": "gate:tag" },
+      { "from": "gate:tag", "to": "gate:vercel:prod" },
+      { "from": "gate:vercel:prod", "to": "critic" },
       { "from": "critic", "to": "scribe" },
       { "from": "scribe", "to": "committer:home" },
       { "from": "committer:home", "to": "gate:home" }
@@ -37,7 +48,9 @@
     "design_package_id": null,
     "blueprint_id": null,
     "artifact_id": null,
-    "artifact_path": null
+    "artifact_path": null,
+    "semver_bump": "patch",
+    "targets": null
   },
   "history": []
 }

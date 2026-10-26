@@ -26,7 +26,7 @@ Quédate en **este** workspace (el kit) y di:
 
 Los agentes escriben bajo `playground/memory/` (no en la raíz del kit).
 
-Deploy pushea `main` (producto; el home del kit no) y corre `vercel --prod` si el app está linkeado.
+Deploy pushea `main` (producto; el home del kit no), publica Vercel sin `--prod`, taguea semver y corre `vercel --prod` si el app está linkeado.
 
 Los skills son **symlink** a `.cursor/skills/` del kit: editas un skill y lo pruebas al momento.
 

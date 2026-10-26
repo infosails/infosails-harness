@@ -15,7 +15,7 @@ Resultado de procesos + arquitectura + builds. El chat no es memoria.
 | `designs/` | Design Packages (Design → Build) |
 | `builds/` | Build Reports (gates TDD/cov/mutación/e2e) |
 | `onboard/` | Informes de hidratación (Onboard) |
-| `deploys/` | Deploy Reports (producto + home en `main`) |
+| `deploys/` | Deploy Reports (producto + home en `main`, tag semver, URLs dev y prod) |
 | `lessons/` | Calidad rechazada aguas arriba (Lead que bloquea) |
 | `costs/` | Tokens por turno (hook Cursor; la Orquesta lee) |
 
@@ -25,5 +25,5 @@ Resultado de procesos + arquitectura + builds. El chat no es memoria.
 architecture/  ← mapa vivo del producto
 designs/DS-…   ← cómo construir ESTA historia
 builds/BR-…    ← evidencia de que se construyó con calidad
-deploys/DR-…   ← SHA en main + URL Vercel prod
+deploys/DR-…   ← SHA en main + tag semver + URL Vercel dev y prod
 ```

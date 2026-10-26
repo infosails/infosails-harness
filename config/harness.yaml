@@ -103,7 +103,7 @@ orchestrator:
       lead: deploy-lead
       skill: .cursor/skills/deploy/SKILL.md
       status: active
-      aliases: [deploy, release, publicar, main, push a main, vercel]
+      aliases: [deploy, release, publicar, main, push a main, vercel, tag]
       activated_by: orchestra-director
 
 leads:
@@ -174,10 +174,15 @@ leads:
     state: memory/processes/deploy/state.json
     inbox: memory/processes/deploy/inbox-from-orchestra.json
     outbox: memory/processes/deploy/outbox-to-orchestra.json
-    internal_agents: [surveyor, committer, publisher, gate, critic, scribe]
+    internal_agents: [surveyor, committer, tagger, publisher, gate, critic, scribe]
     reads: [memory/builds, product repos, home git]
-    writes: [product repos main, vercel production, home git main, memory/deploys]
-    contract: git_main_then_vercel_prod
+    writes: [product repos main, semver tags, vercel dev, vercel production, home git main, memory/deploys]
+    contract: git_main_then_vercel_dev_then_semver_tag_then_vercel_prod
+    semver:
+      tag_format: vMAJOR.MINOR.PATCH
+      default_bump: patch
+      first_tag: v0.1.0
+      first_tag_if_major: v1.0.0
 
 memory:
   root: memory
@@ -201,7 +206,7 @@ memory:
     architecture/: Design Lead (y Onboard seed / humano).
     designs/: Design Lead → input de Build.
     onboard/: Onboard Lead (informe de seed).
-    deploys/: Deploy Lead (git main + vercel --prod; home versiona memory/).
+    deploys/: Deploy Lead (git main, vercel dev, tag semver, vercel --prod; home versiona memory/).
     lessons/: Lead que bloquea por calidad aguas arriba. La Orquesta no edita.
     costs/: hook Cursor (stop); la Orquesta solo lee.
 
@@ -286,7 +291,7 @@ lifecycle:
       name: Deploy
       status: active
       input: [memory/builds/, product repos, home git]
-      output: [product repos main, vercel production, home git main, memory/deploys/]
+      output: [product repos main, semver tags, vercel dev, vercel production, home git main, memory/deploys/]
       next: null
 
 paths:
@@ -350,7 +355,11 @@ deploy_report:
   target_branch: main
   contract: |
     Commit y push a main en repos de producto y en el home (memory/).
-    Después vercel --prod --yes en cada app Vercel. El home no se publica.
+    Antes de git y de Vercel, preguntar si es dev y prod o solo prod.
+    Dev (vercel deploy --yes sin --prod, alias -dev) solo si eligieron ambos.
+    Prod solo con otra autorización explícita: tag semver vX.Y.Z y luego
+    vercel --prod --yes. Elegir solo prod no autoriza el tag.
+    Bump default: patch. El home no se publica ni se taguea.
 
 lesson:
   format: markdown

@@ -8,7 +8,7 @@ Skill de orquestación: [graph.md](graph.md) · [lead-subagents.md](lead-subagen
 
 ## Dónde vive
 
-Inmediatamente **antes** de `scribe`, salvo Deploy (`critic` revisa SHA/URL tras `gate:vercel`, luego `scribe`).
+Inmediatamente **antes** de `scribe`, salvo Deploy (`critic` revisa SHA, tag y URLs tras `gate:vercel:prod`, luego `scribe`).
 
 `kind: gate`. `writes: []` (salvo lección: la escribe el **Lead**, no el subagente critic).
 
@@ -111,6 +111,9 @@ Si el DS es impracticable (sin paths, sin contratos, UI sin mapa, Gherkin inejec
 ## Deploy
 
 - [ ] SHA de producto en `origin/main` (o skip documentado)
-- [ ] URL Vercel prod o skip documentado
-- [ ] Sin `--force`; sin secretos en el DR
-- [ ] Home **después** del DR; playground-kit no pusheado
+- [ ] URL Vercel **dev** (alias `-dev`) si eligieron ambos ambientes, o skip si eligieron solo prod o no hubo Vercel
+- [ ] Tag `vMAJOR.MINOR.PATCH` en ese SHA y en `origin`, o skip si no hubo Vercel o el usuario no autorizó prod
+- [ ] URL Vercel **prod** solo después de la autorización y del tag, o skip documentado
+- [ ] No hay tag ni `vercel --prod` si `approve:prod` no está `done` con un sí explícito
+- [ ] Sin `--force` (commits ni tags); sin secretos en el DR
+- [ ] Home **después** del DR; el home no está tagueado; playground-kit no pusheado

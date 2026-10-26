@@ -4,6 +4,7 @@ Fuente de verdad del **qué corre ahora**. No es un runtime aparte: el runtime s
 
 Template del kit: `.cursor/skills/<proceso>/graph.yaml`.  
 Al `start`, si `graph.nodes` está vacío o falta, copia el YAML al state.  
+**Deploy:** en `start`, copia siempre `deploy/graph.yaml` (reemplaza el grafo previo, nodos `idle`). Un state viejo solo tiene `gate:vercel` y se salta dev, el tag y prod.  
 Al `resume`, **no** recopies el template: sigue el grafo persistido.
 
 Guía de lanzamiento: [lead-subagents.md](lead-subagents.md).  
@@ -64,7 +65,7 @@ El template trae el esqueleto. Quien parte trabajo **agrega nodos y reescribe ar
 | Quién | Qué agrega | Qué rewirea |
 |-------|------------|-------------|
 | Build `planner` | `tdd-dev:<WP-id>` por paquete | Quita `planner → coverage-gate`. Poné `planner → cada WP raíz` y `WP → coverage-gate`. WPs con `depends_on` se encadenan entre sí. |
-| Deploy `surveyor` | `committer:<repo_id>` por git de producto; `publisher:<app_id>` por target Vercel | Quita `surveyor → gate:git` si hay committers (`surveyor → committer:* → gate:git`). Quita `gate:git → gate:vercel` si hay publishers (`gate:git → publisher:* → gate:vercel`). Sin Vercel: `gate:vercel` = `skipped`. |
+| Deploy `surveyor` | `committer:<repo_id>` por git de producto; `publisher:dev:<app_id>` y `publisher:prod:<app_id>` por target Vercel; `tagger:<repo_id>` por git de producto | Quita `choose:targets → gate:git` si hay committers (`choose:targets → committer:* → gate:git`). No pongas committers antes de `choose:targets`. Con Vercel: `gate:git → publisher:dev:* → gate:vercel:dev → approve:prod → tagger:* → gate:tag → publisher:prod:* → gate:vercel:prod`. `choose:targets` y `approve:prod` no se saltean. Sin Vercel: `choose:targets`, `gate:vercel:dev`, `approve:prod`, `gate:tag` y `gate:vercel:prod` = `skipped`. |
 | Design `surveyor` | nada | Si no hay UI: `ui-designer` = `skipped`. |
 
 Cada instancia: `role` del roster, `id` único, `writes[]` concretos.

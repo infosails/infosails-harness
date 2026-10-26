@@ -27,7 +27,7 @@ Agentes expertos (nodos instanciados del roster)
 
 ## Cada turno
 
-1. `start`: si `graph` falta o `nodes` vacío → copiar `.cursor/skills/<proceso>/graph.yaml`.
+1. `start`: si `graph` falta o `nodes` vacío → copiar `.cursor/skills/<proceso>/graph.yaml`. En **Deploy**, copiar siempre `deploy/graph.yaml` (reemplaza el grafo previo).
 2. Leer `memory/lessons/` con `to_process` = este proceso ([lessons.md](lessons.md)).
 3. Opcionales innecesarios → `skipped`.
 4. Calcular **frontier** ([graph.md](graph.md)): predecesores `done`/`skipped`, sin colisión de `writes` con `running`.
@@ -92,7 +92,7 @@ Ejemplos (van en cada `graph.yaml`):
 | Design | `surveyor` → `architect` ∥ `ui-designer` → `critic` → `scribe` |
 | Build | `surveyor` → `planner` → `tdd-dev:*` (según `depends_on`/`writes`) → `coverage-gate` → `sast` ∥ `mutation` ∥ `e2e` ∥ `complexity-gate` → `integrator` → `critic` → `scribe` |
 | Onboard | `code-surveyor` ∥ `capability-scout` ∥ `docs-scout` → `synthesizer` → `critic` → `scribe` |
-| Deploy | `surveyor` → `committer:<repo>` ∥ … → `gate:git` → `publisher:<app>` ∥ … → `gate:vercel` → `critic` → `scribe` → `committer:home` → `gate:home` |
+| Deploy | `surveyor` → `choose:targets` (human) → `committer:<repo>` ∥ … → `gate:git` → `publisher:dev:<app>` ∥ … → `gate:vercel:dev` → `approve:prod` (human) → `tagger:<repo>` ∥ … → `gate:tag` → `publisher:prod:<app>` ∥ … → `gate:vercel:prod` → `critic` → `scribe` → `committer:home` → `gate:home` |
 
 ## Estado de nodo / rol
 

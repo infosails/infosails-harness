@@ -14,7 +14,7 @@ Lo que hay que construir/corregir vive en `memory/` (resultado de Discovery/Bug)
 - `memory/lessons/` — lecciones de calidad entre procesos
 - `memory/director-state.json` — estado de procesos (solo el Director)
 
-El Director activa fases y delega (Discovery → Design → Build → Deploy). Deploy pushea `main` y publica con `vercel --prod`.
+El Director activa fases y delega (Discovery → Design → Build → Deploy). Deploy pushea `main`, publica Vercel sin `--prod`, taguea semver y publica con `vercel --prod`.
 
 ## Cómo trabajar
 

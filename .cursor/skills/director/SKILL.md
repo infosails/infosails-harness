@@ -51,7 +51,7 @@ Soy el Director de Orquesta. Estado: {resumen}.
 3. Bug — capturar defecto
 4. Design — diseñar una historia (arquitecto)
 5. Build — implementar (TDD, cov≥85%, CCN≤10, mutación, SAST, Playwright+Gherkin)
-6. Deploy — commit a main y vercel --prod
+6. Deploy — pregunta dev+prod o solo prod; prod (tag + vercel --prod) solo si autorizas después
 7. Onboard — hidratar memoria desde proyecto ya iniciado
 8. Ver estado / backlog
 9. Continuar pipeline
@@ -80,6 +80,7 @@ Resumen = proceso activo + artefactos waiting + costo del ledger si hay. **Sin**
    - history: `activate`
 2. Escribe brief en `memory/processes/<proceso>/inbox-from-orchestra.json` (`command: start|resume`, intent, constraints).
    - Si el usuario eligió **Onboard** y listó repos en el chat, pásalos en `constraints` (paths/ids/roles) además del intent.
+   - Si el usuario eligió **Deploy** y pidió bump `major`, `minor` o `patch`, pasa `semver_bump=<nivel>` en `constraints`. Si no lo dijo, no preguntes: el Lead usa **patch**.
 3. Di: `Activo <Proceso> Lead.`
 4. Carga y sigue el skill del **Lead** (no inventes sub-agentes **de la Orquesta**).
    El Lead ejecuta el **frontier** de su grafo (subagentes en paralelo cuando hay nodos ready); eso es interno y no lo orquestas tú.
@@ -93,7 +94,7 @@ Lee `memory/processes/<proceso>/outbox-to-orchestra.json`.
 |-------|--------------------|
 | `status` | Opcional: mostrar `summary`. No cambies de fase. |
 | `complete` | Registrar artefacto en `artifacts` con `derived_from` (id de `focus` si es padre), focus, session idle, history `complete`, proponer siguiente Lead según `next_hint` / transitions |
-| `blocked` | Marcar blocked; preguntar al usuario. No editar `memory/lessons/` (eso lo hace el Lead). |
+| `blocked` | Marcar blocked; preguntar al usuario. No editar `memory/lessons/` (eso lo hace el Lead). Si `process` es `deploy` y `blocked_reason` es `deploy_targets` o `prod_authorization`, la pregunta es el `summary`. La respuesta es `resume` de Deploy, nunca `start`. |
 | `aborted` | Session idle; history `aborted` |
 
 Tras `complete` de Discovery:
@@ -112,13 +113,13 @@ Tras `complete` de Build:
 
 - stage `build_done`, `next_process: deploy`
 - Registrar `BR-…`
-- Proponer **Deploy Lead** (git a `main` + `vercel --prod`)
+- Proponer **Deploy Lead** (pregunta si es dev y prod o solo prod; el tag y `vercel --prod` esperan otra autorización)
 
 Tras `complete` de Deploy:
 
 - stage `done`, `next_process: null`
 - Registrar artefacto tipo `deploy_report` (`DR-…`)
-- Decir al usuario el `summary` (SHA en `main` y URL de Vercel si hubo publish)
+- Decir al usuario el `summary` (SHA en `main`, tag semver, URL de dev y URL de prod si hubo publish)
 
 Tras `complete` de Bug: `bug_done` → `next_process: build`.
 
